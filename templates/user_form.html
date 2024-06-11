@@ -1,0 +1,25 @@
+{% extends "bootstrap/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Картки</h1>
+    {% for item in data %}
+    <div class="card mb-3">
+        <div class="card-header">
+            ID запису у БД: {{ item.id }}
+        </div>
+        <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-user"></i> Ім'я: {{ item.name }}</h5>
+            <p class="card-text"><strong>Призвище:</strong> {{ item.surname }}</p>
+            <p class="card-text"><strong>По батькові:</strong> {{ item.patronym }}</p>
+            <p class="card-text"><strong>Дата народження:</strong> {{ item.dateOfBirth }}</p>
+            <p class="card-text"><strong>Стать:</strong> {{ item.gender }}</p>
+            <p class="card-text"><strong>РНОКПП:</strong> {{ item.rnokpp }}</p>
+            <p class="card-text"><strong>Номер паспорту:</strong> {{ item.passportNumber }}</p>
+            <p class="card-text"><strong>УНЗР:</strong> {{ item.unzr }}</p>
+        </div>
+    </div>
+    {% endfor %}
+    <button class="btn btn-primary" onclick="history.back()">Назад</button>
+</div>
+{% endblock %}

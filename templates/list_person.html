@@ -1,0 +1,247 @@
+{% extends "bootstrap/base.html" %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="/">Реєстр</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item active">
+                <a class="nav-link" href="/">Пошук<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/create">Створення запису</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h1 class="mb-4">Картки</h1>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Ім'я</th>
+                <th scope="col">Призвище</th>
+                <th scope="col">По батькові</th>
+                <th scope="col">УНЗР</th>
+                <th scope="col">Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.surname }}</td>
+                <td>{{ item.patronym }}</td>
+                <td>{{ item.unzr }}</td>
+                <td>
+                    <button class="btn btn-info" onclick="showDetails({{ item.id }})">Подробнее</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button class="btn btn-primary" onclick="history.back()">Назад</button>
+</div>
+
+<!-- Модальное окно для отображения и редактирования подробной информации -->
+<div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsModalLabel">Подробная информация</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="detailsForm">
+                    <div class="form-group">
+                        <label for="detailName">Ім'я</label>
+                        <input type="text" class="form-control" id="detailName" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="detailSurname">Призвище</label>
+                        <input type="text" class="form-control" id="detailSurname" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="detailPatronym">По батькові</label>
+                        <input type="text" class="form-control" id="detailPatronym" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="detailDateOfBirth">Дата народження</label>
+                        <input type="text" class="form-control" id="detailDateOfBirth" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="detailGender">Стать</label>
+                        <select class="form-control" id="detailGender" disabled>
+                            <option value="male">male</option>
+                            <option value="female">female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="detailRnokpp">РНОКПП</label>
+                        <input type="text" class="form-control" id="detailRnokpp" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="detailPassportNumber">Номер паспорту</label>
+                        <input type="text" class="form-control" id="detailPassportNumber" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="detailUnzr">УНЗР</label>
+                        <input type="text" class="form-control" id="detailUnzr" disabled>
+                    </div>
+                </form>
+                <!-- Блок для сообщений -->
+                <div id="messageBox" class="alert" role="alert" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="editButton" onclick="editDetails()">Редактировать</button>
+                <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteItem()">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentItemId;
+
+function showDetails(id) {
+    currentItemId = id;
+    const item = {{ data|tojson }};
+    const details = item.find(x => x.id === id);
+
+    document.getElementById('detailName').value = details.name;
+    document.getElementById('detailSurname').value = details.surname;
+    document.getElementById('detailPatronym').value = details.patronym;
+    document.getElementById('detailDateOfBirth').value = details.dateOfBirth;
+    document.getElementById('detailGender').value = details.gender;
+    document.getElementById('detailRnokpp').value = details.rnokpp;
+    document.getElementById('detailPassportNumber').value = details.passportNumber;
+    document.getElementById('detailUnzr').value = details.unzr;
+
+    document.getElementById('editButton').textContent = 'Редактировать';
+    toggleFields(false); // Блокируем поля
+
+    // Скрываем блок сообщений
+    const messageBox = document.getElementById('messageBox');
+    messageBox.style.display = 'none';
+    messageBox.className = 'alert';
+
+    $('#detailsModal').modal('show');
+}
+
+function editDetails() {
+    const editButton = document.getElementById('editButton');
+    const isEditing = editButton.textContent === 'Сохранить';
+
+    if (isEditing) {
+        // Сохранить изменения
+        const updatedItem = {
+            id: currentItemId,
+            name: document.getElementById('detailName').value,
+            surname: document.getElementById('detailSurname').value,
+            patronym: document.getElementById('detailPatronym').value,
+            dateOfBirth: document.getElementById('detailDateOfBirth').value,
+            gender: document.getElementById('detailGender').value,
+            rnokpp: document.getElementById('detailRnokpp').value,
+            passportNumber: document.getElementById('detailPassportNumber').value,
+            unzr: document.getElementById('detailUnzr').value,
+        };
+
+        // Отправка обновленных данных на сервер
+        fetch('/edit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedItem),
+        })
+        .then(response => {
+            const messageBox = document.getElementById('messageBox');
+            if (response.status === 200) {
+                response.json().then(data => {
+                    messageBox.textContent = 'Данные обновлены';
+                    messageBox.className = 'alert alert-success';
+                    messageBox.style.display = 'block';
+                });
+            } else if (response.status === 204) {
+                messageBox.textContent = 'Данные не нуждаются в обновлении';
+                messageBox.className = 'alert alert-info';
+                messageBox.style.display = 'block';
+            } else {
+                response.json().then(data => {
+                    messageBox.textContent = `Произошла ошибка: ${JSON.stringify(data)}`;
+                    messageBox.className = 'alert alert-danger';
+                    messageBox.style.display = 'block';
+                });
+            }
+        })
+        .catch(error => {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = `Произошла ошибка: ${error.message}`;
+            messageBox.className = 'alert alert-danger';
+            messageBox.style.display = 'block';
+        });
+
+    } else {
+        // Переключиться в режим редактирования
+        editButton.textContent = 'Сохранить';
+        toggleFields(true); // Разблокируем поля
+    }
+}
+
+function deleteItem() {
+    const unzr = document.getElementById('detailUnzr').value;
+
+    // Отправка запроса на удаление
+    fetch('/delete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ unzr: unzr }),
+    })
+    .then(response => {
+        const messageBox = document.getElementById('messageBox');
+        if (response.status === 200) {
+            response.json().then(data => {
+                messageBox.textContent = 'Данные удалены';
+                messageBox.className = 'alert alert-success';
+                messageBox.style.display = 'block';
+            });
+        } else {
+            response.json().then(data => {
+                messageBox.textContent = `Произошла ошибка: ${JSON.stringify(data)}`;
+                messageBox.className = 'alert alert-danger';
+                messageBox.style.display = 'block';
+            });
+        }
+    })
+    .catch(error => {
+        const messageBox = document.getElementById('messageBox');
+        messageBox.textContent = `Произошла ошибка: ${error.message}`;
+        messageBox.className = 'alert alert-danger';
+        messageBox.style.display = 'block';
+    });
+}
+
+function toggleFields(enable) {
+    document.getElementById('detailName').disabled = !enable;
+    document.getElementById('detailSurname').disabled = !enable;
+    document.getElementById('detailPatronym').disabled = !enable;
+    document.getElementById('detailDateOfBirth').disabled = !enable;
+    document.getElementById('detailGender').disabled = !enable;
+    document.getElementById('detailRnokpp').disabled = !enable;
+    document.getElementById('detailPassportNumber').disabled = !enable;
+    document.getElementById('detailUnzr').disabled = !enable;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "bootstrap/base.html" %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="/">Реєстр</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item active">
+                <a class="nav-link" href="/">Пошук<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/create">Створення запису</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2>Пошук у БД</h2>
+    <form method="POST" action="/">
+        <div class="form-group">
+            <label for="search-field">Выберите поле для поиска</label>
+            <select class="form-control" id="search-field" name="search_field" required>
+                <option value="name">Имя</option>
+                <option value="surname">Фамилия</option>
+                <option value="patronymic">Отчество</option>
+                <option value="dob">Дата рождения</option>
+                <option value="passportNumber">Номер паспорта</option>
+                <option value="unzr">УНЗР</option>
+                <option value="rnokpp">РНОКРР</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="search-value">Значение для поиска</label>
+            <input type="text" class="form-control" id="search-value" name="search_value" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Поиск</button>
+    </form>
+</div>
+{% endblock %}
