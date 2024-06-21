@@ -1,6 +1,7 @@
 import requests
 from requests import Response
 from urllib.parse import quote
+import configparser
 
 base_url = "http://127.0.0.1:8000/person/"
 
@@ -12,6 +13,44 @@ class Response:
 
     def __repr__(self):
         return f"Response(status_code={self.status_code}, body={self.body})"
+
+class Config:
+    def __init__(self, filename):
+        self.parser = configparser.ConfigParser()
+        self.parser.read(filename)
+
+        # Присваивание конфигурационных параметров как атрибутов класса
+        self.trembita_host    = self.parser.get('trembita', 'host')
+        self.trembita_purpose = self.parser.get('trembita', 'purpose_id')
+
+        self.client_org_type  = self.parser.get('client', 'type')
+        self.client_org_code  = self.parser.get('client', 'code')
+        self.client_org_sub   = self.parser.get('client', 'subsystem')
+
+        self.service_org_type = self.parser.get('service', 'type')
+        self.service_org_code = self.parser.get('service', 'code')
+        self.service_org_sub  = self.parser.get('service', 'subsystem')
+        self.service_org_name = self.parser.get('service', 'name')
+        self.service_org_version = self.parser.get('service', 'ver')
+
+    def get(self, section, option):
+        return self.parser.get(section, option)
+
+    def get_uxp_client_header(self) -> str:
+        result = self.client_org_type + "/" + self.client_org_code + "/" + self.client_org_sub
+        return result
+
+    def get_uxp_service_header(self) -> str:
+        result = (self.service_org_type + "/" + self.service_org_code + "/" +
+                  self.service_org_sub + "/" + self.service_org_name + "/" + self.service_org_version)
+        return result
+
+
+config = Config('config.ini')
+
+def get_uxp_client_header()-> str:
+    result = config.get
+
 
 def get_person_from_service(parameter: str, value: str) -> list:
     url = base_url + parameter + "/" + value

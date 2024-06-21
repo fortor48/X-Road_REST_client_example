@@ -9,6 +9,7 @@ import io
 import httpx
 import json
 import utils
+import config_utils
 
 
 
@@ -18,7 +19,9 @@ import utils
 app = Flask(__name__)
 Bootstrap(app)  # Инициализация Flask-Bootstrap4
 
-base_url = "http://127.0.0.1:8000/person/name/"
+conf = utils.Config('config.ini')
+
+#base_url = "http://127.0.0.1:8000/person/name/"
 
 
 @app.route('/', methods=['GET', 'POST'])
