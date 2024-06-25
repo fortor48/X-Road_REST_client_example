@@ -134,8 +134,9 @@ def list_files():
 def download_file(filename):
     logger.debug(f"Отримано GET запит на маршрут '/download/{filename}'.")
     ASIC_DIR = os.path.join(os.getcwd(), asic_directory)
+    safe_filename = os.path.basename(filename)  # Обезопашиваем путь
     try:
-        return send_from_directory(ASIC_DIR, filename, as_attachment=True)
+        return send_from_directory(ASIC_DIR, safe_filename, as_attachment=True)
     except Exception as e:
         logger.error(f"Виникла помилка: {str(e)}")
         return render_template('error.html', error_message=e, current_page='files')

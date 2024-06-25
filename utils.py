@@ -76,6 +76,7 @@ def configure_logging(config_instance):
         datefmt=log_datefmt,
         level=getattr(logging, log_level, logging.DEBUG)
     )
+    logger.info("Логування налаштовано")
 
 def download_asic_from_trembita(asics_dir: str, queryId: str, config_instance):
     # https: // sec1.gov / signature? & queryId = abc12345 & xRoadInstance = EE & memberClass = ENT & memberCode =
@@ -90,14 +91,18 @@ def download_asic_from_trembita(asics_dir: str, queryId: str, config_instance):
 
     if config_instance.trembita_protocol == "https":
         url = f"https://{config_instance.trembita_host}/signature"
+        logger.info(f"Спроба завантажити ASIC з Trembita з URL: {url} та параметрами: {query_params}")
 
-        # Отправляем GET-запрос для скачивания файла
-        response = requests.get(url, stream=True, params=query_params,
-                                cert=(f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
-                                verify=f"{config_instance.cert_path}/trembita.pem")
+        try:
+            # Отправляем GET-запрос для скачивания файла
+            response = requests.get(url, stream=True, params=query_params,
+                                    cert=(f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
+                                    verify=f"{config_instance.cert_path}/trembita.pem")
+            response.raise_for_status()
 
-        # Проверяем, успешно ли выполнен запрос
-        if response.status_code == 200:
+            logger.info(f"Успішно отримано відповідь від сервера з кодом: {response.status_code}")
+
+
             # Пытаемся получить имя файла из заголовка Content-Disposition
             content_disposition = response.headers.get('Content-Disposition')
             if content_disposition:
@@ -116,14 +121,18 @@ def download_asic_from_trembita(asics_dir: str, queryId: str, config_instance):
                 # Проходим по частям ответа и записываем их в файл
                 for chunk in response.iter_content(chunk_size=8192):
                     file.write(chunk)
-            print(f'Файл успешно скачан и сохранен как {local_filename}')
-        else:
-            print(f'Не удалось скачать файл. Статус код: {response.status_code}')
+            logger.info(f'Файл успішно завантажено та збережено як:  {local_filename}')
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Помилка під час завантаження файлу: {e}")
+            raise
     else:
-        raise ValueError("This function works only when trembita_protocol is https!!!")
+        logger.error("Функція download_asic_from_trembita працює тільки з протоколом https")
+        raise ValueError("Ця функція процюе тільки якщо протокол роботи з Трембітою - https!!!")
 
 
 def generate_key_cert(key: str, crt: str, path: str):
+    logger.info("Генерація ключа та сертифіката")
+    logger.debug(f"Імʼя файлу ключа: {key}, імʼя файлу сертифіката: {crt}, директорія: {path}")
     private_key = rsa.generate_private_key(
         public_exponent=65537,
         key_size=2048,
@@ -159,22 +168,27 @@ def generate_key_cert(key: str, crt: str, path: str):
 
     # Сохранение приватного ключа в файл
     key_full_path = os.path.join(path, key)
+    try:
+        with open(key_full_path, "wb") as f:
+            f.write(private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption()
+            ))
+        logger.info(f"Ключ збережено у {key_full_path}")
 
-    with open(key_full_path, "wb") as f:
-        f.write(private_key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.NoEncryption()
-        ))
+        # Сохранение сертификата в файл
+        crt_full_path = os.path.join(path, crt)
 
-    # Сохранение сертификата в файл
-    crt_full_path = os.path.join(path, crt)
-
-    with open(crt_full_path, "wb") as f:
-        f.write(cert.public_bytes(serialization.Encoding.PEM))
-
+        with open(crt_full_path, "wb") as f:
+            f.write(cert.public_bytes(serialization.Encoding.PEM))
+        logger.info(f"Сертифікат збережено у {crt_full_path}")
+    except IOError as e:
+        logger.error(f"Помилка під час збереження ключа або сертифіката: {e}")
+        raise
 
 def get_uxp_headers_from_config(config_instance) -> dict:
+    logger.debug("Формування заголовків UXP")
     uxp_client_header_name = "UXP-Client"
     uxp_service_header_name = "UXP-Service"
 
@@ -198,13 +212,16 @@ def get_uxp_headers_from_config(config_instance) -> dict:
     else:
         uxp_service_header_value = base_service_value
 
-    return {
+    headers = {
         uxp_client_header_name: uxp_client_header_value,
         uxp_service_header_name: uxp_service_header_value
     }
+    logger.debug(f"Заголовки UXP сформовано: {headers}")
+    return headers
 
 
 def get_uxp_query_params() -> dict:
+    logger.debug("Генерація UXP параметрів запиту")
     uxp_query_id_name = "queryId"
     uxp_user_id_name = "userId"
 
@@ -212,17 +229,22 @@ def get_uxp_query_params() -> dict:
     uxp_user_id_value = "Flask_client"  # можна задати будьяке значення, при обміні це імʼя
     # буде збережено на ШБО, та його можна буде побачити наприклад за допомогою веріфаєра.
 
-    return {
+    params = {
         uxp_query_id_name: uxp_query_id_value,
         uxp_user_id_name: uxp_user_id_value
     }
 
+    logger.debug(f"UXP параметри запиту згенеровано: {params}")
+    return params
+
 
 def get_base_trembita_uri(config_instance) -> str:
+    logger.debug("Формування базового URI Trembita")
     if config_instance.trembita_protocol == "https":
         uri = f"https://{config_instance.trembita_host}/restapi"
     else:
         uri = f"http://{config_instance.trembita_host}/restapi"
+    logger.debug(f"Базовий URI Trembita: {uri}")
     return uri
 
 
@@ -233,6 +255,7 @@ def get_person_from_service(parameter: str, value: str, config_instance) -> list
 
     url = f"{base_uri}/{parameter}/{value}"
     encoded_url = quote(url, safe=':/')
+    logger.info(f"Отримання інформації про особу з сервісу за параметром: {parameter} та значенням: {value}")
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.get(encoded_url, headers=headers, params=query_params,
@@ -244,13 +267,16 @@ def get_person_from_service(parameter: str, value: str, config_instance) -> list
 
         download_asic_from_trembita("asic", query_params.get('queryId'), config_instance)
     except Exception as e:
+        logger.error(f"Помилка під час отримання інформації про особу: {e}")
         raise ValueError(f"Error while sending HTTP GET: {e}")
 
     if response.status_code == 200:
         json_data = response.json()
         message_list = json_data.get('message', [])
+        logger.info("Запит на отримання їнформації оброблено")
+        logger.debug(f"Отримано інформацію про особу: {message_list}")
         return message_list
-
+    logger.error(f"Отримано HTTP код: {response.status_code}, повідомлення про помилку: {response.text}")
     raise ValueError(f"Recieved HTTP code: {response.status_code}, error message: {response.text}")
 
 
@@ -260,6 +286,7 @@ def edit_person_in_service(data: dict, config_instance) -> CustomResponse:
     query_params = get_uxp_query_params()
     url = base_url
 
+    logger.debug(f"Редагування інформації про особу: {data}")
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.put(url, json=data, headers=headers, params=query_params,
@@ -270,12 +297,15 @@ def edit_person_in_service(data: dict, config_instance) -> CustomResponse:
             response = requests.put(url, json=data, headers=headers, params=query_params)
 
     except requests.exceptions.RequestException as e:
+        logger.error(f"Помилка під час редагування інформації про особу: {e}")
         raise ValueError(f"Error while sending HTTP PUT: {e}")
 
     if not response.content:
         json_body = {"message": "Nothing to display"}
+        logger.info("Редагування завершено, отримана пуста відповідь.")
         return CustomResponse(status_code=response.status_code, body=json_body)
 
+    logger.info(f"Редагування завершено, отримано відповідь: {response.json()}")
     return CustomResponse(status_code=response.status_code, body=response.json())
 
 
@@ -285,6 +315,7 @@ def service_delete_person(data: dict, config_instance) -> CustomResponse:
     query_params = get_uxp_query_params()
 
     url = f"{base_url}/unzr/{str(data["unzr"])}"
+    logger.info(f"Видалення інформації про особу з id: {data['unzr']}")
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.delete(url, headers=headers, params=query_params,
@@ -295,8 +326,10 @@ def service_delete_person(data: dict, config_instance) -> CustomResponse:
             response = requests.delete(url, headers=headers, params=query_params)
     except Exception as e:
         json_body = {"Error while sending HTTP DELETE": f"{e}"}
+        logger.error(f"Помилка під час видалення інформації про особу: {e}")
         return CustomResponse(status_code=500, body=json_body)
 
+    logger.info(f"Видалення завершено, отримано відповідь: {response.json()}")
     return CustomResponse(status_code=response.status_code, body=response.json())
 
 
@@ -306,6 +339,7 @@ def service_add_person(data: dict, config_instance) -> CustomResponse:
     query_params = get_uxp_query_params()
 
     url = base_url
+    logger.info(f"Додавання нової особи: {data}")
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.post(url, json=data, headers=headers, params=query_params,
@@ -314,22 +348,31 @@ def service_add_person(data: dict, config_instance) -> CustomResponse:
                                      verify=f"{config_instance.cert_path}/trembita.pem")
         else:
             response = requests.post(url, json=data, headers=headers, params=query_params)
+
+        if response.status_code > 400:
+            logger.error(f"Виникла помилка при додаванні особи, код: {response.status_code}")
+
     except Exception as e:
         json_body = {"Error while sending HTTP POST": f"{e}"}
+        logger.error(f"Помилка під час додавання нової особи: {e}")
         return CustomResponse(status_code=500, body=json_body)
+
+    logger.info(f"Обробку запиту додавання завершено, отримано відповідь: {response.json()}")
     return CustomResponse(status_code=response.status_code, body=response.json())
 
 
 def create_dir_if_not_exist(dir_path: str):
+    logger.info(f"Перевірка існування директорії: {dir_path}")
     if not os.path.exists(dir_path):
         # Создаем директорию, если её нет
         os.makedirs(dir_path)
-        print(f"Директория '{dir_path}' была создана.")
+        logger.info(f"Директория '{dir_path}' була створена.")
     else:
-        print(f"Директория '{dir_path}' уже существует.")
+        logger.info(f"Директория '{dir_path}' вже існує.")
 
 
 def get_files_with_metadata(directory):
+    logger.info(f"Отримання метаданих файлів у директорії: {directory}")
     files_metadata = []
     for filename in os.listdir(directory):
         filepath = os.path.join(directory, filename)
@@ -339,5 +382,6 @@ def get_files_with_metadata(directory):
             'name': filename,
             'creation_time': creation_time_str
         })
+    logger.info(f"Метадані файлів отримано: {files_metadata}")
     return files_metadata
 
