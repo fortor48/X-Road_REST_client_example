@@ -11,9 +11,13 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 import datetime
+import os
+import logging
 
 
-class Response:
+logger = logging.getLogger(__name__)
+
+class CustomResponse:
     def __init__(self, status_code: int, body: dict):
         self.status_code = status_code
         self.body = body
@@ -24,30 +28,54 @@ class Response:
 
 class Config:
     def __init__(self, filename):
-        self.parser = configparser.ConfigParser()
+        self.parser = configparser.ConfigParser(interpolation=None)
         self.parser.read(filename)
 
         # Присваивание конфигурационных параметров как атрибутов класса
+        # Trembita security server section
         self.trembita_protocol = self.parser.get('trembita', 'protocol')
         self.trembita_host = self.parser.get('trembita', 'host')
+        self.trembita_purpose = self.parser.get('trembita', 'purpose_id') # For MDPD
         self.cert_path = self.parser.get('trembita', 'cert_path')
-        self.trembita_purpose = self.parser.get('trembita', 'purpose_id')
-
+        self.asic_path = self.parser.get('trembita', 'asic_path')
+        # Orginization client section
         self.client_instance = self.parser.get('client', 'instance_name')
         self.client_org_type = self.parser.get('client', 'member_class')
         self.client_org_code = self.parser.get('client', 'member_code')
         self.client_org_sub = self.parser.get('client', 'subsystem_code')
-
+        # Orginization service section
         self.service_instance = self.parser.get('service', 'instance_name')
         self.service_org_type = self.parser.get('service', 'member_class')
         self.service_org_code = self.parser.get('service', 'member_code')
         self.service_org_sub = self.parser.get('service', 'subsystem_code')
         self.service_org_name = self.parser.get('service', 'service_code')
         self.service_org_version = self.parser.get('service', 'service_version')
+        # logging section
+        self.log_filename = self.parser.get('logging', 'filename')
+        self.log_filemode = self.parser.get('logging', 'filemode')
+        self.log_format = self.parser.get('logging', 'format')
+        self.log_dateformat = self.parser.get('logging', 'dateformat')
+        self.log_level = self.parser.get('logging', 'level')
+
 
     def get(self, section, option):
         return self.parser.get(section, option)
 
+
+def configure_logging(config_instance):
+    log_filename =  config_instance.log_filename
+    log_filemode = config_instance.log_filemode
+    log_format = config_instance.log_format
+    log_datefmt = config_instance.log_dateformat
+    log_level = config_instance.log_level
+
+    logging.basicConfig(
+        filename=log_filename,
+        filemode=log_filemode,
+        format=log_format,
+        datefmt=log_datefmt,
+        level=getattr(logging, log_level, logging.DEBUG)
+    )
 
 def download_asic_from_trembita(asics_dir: str, queryId: str, config_instance):
     # https: // sec1.gov / signature? & queryId = abc12345 & xRoadInstance = EE & memberClass = ENT & memberCode =
@@ -92,7 +120,7 @@ def download_asic_from_trembita(asics_dir: str, queryId: str, config_instance):
         else:
             print(f'Не удалось скачать файл. Статус код: {response.status_code}')
     else:
-        raise ValueError("This function works only when trembita_protocol is https!!")
+        raise ValueError("This function works only when trembita_protocol is https!!!")
 
 
 def generate_key_cert(key: str, crt: str, path: str):
@@ -130,7 +158,7 @@ def generate_key_cert(key: str, crt: str, path: str):
     ).sign(private_key, hashes.SHA256())
 
     # Сохранение приватного ключа в файл
-    key_full_path = f"{path}/{key}"
+    key_full_path = os.path.join(path, key)
 
     with open(key_full_path, "wb") as f:
         f.write(private_key.private_bytes(
@@ -140,7 +168,7 @@ def generate_key_cert(key: str, crt: str, path: str):
         ))
 
     # Сохранение сертификата в файл
-    crt_full_path = f"{path}/{crt}"
+    crt_full_path = os.path.join(path, crt)
 
     with open(crt_full_path, "wb") as f:
         f.write(cert.public_bytes(serialization.Encoding.PEM))
@@ -208,7 +236,8 @@ def get_person_from_service(parameter: str, value: str, config_instance) -> list
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.get(encoded_url, headers=headers, params=query_params,
-                                    cert=(f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
+                                    cert=(
+                                    f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
                                     verify=f"{config_instance.cert_path}/trembita.pem")
         else:
             response = requests.get(encoded_url, headers=headers, params=query_params)
@@ -225,7 +254,7 @@ def get_person_from_service(parameter: str, value: str, config_instance) -> list
     raise ValueError(f"Recieved HTTP code: {response.status_code}, error message: {response.text}")
 
 
-def edit_person_in_service(data: dict, config_instance) -> Response:
+def edit_person_in_service(data: dict, config_instance) -> CustomResponse:
     base_url = get_base_trembita_uri(config_instance)
     headers = get_uxp_headers_from_config(config_instance)
     query_params = get_uxp_query_params()
@@ -234,7 +263,8 @@ def edit_person_in_service(data: dict, config_instance) -> Response:
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.put(url, json=data, headers=headers, params=query_params,
-                                    cert=(f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
+                                    cert=(
+                                    f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
                                     verify=f"{config_instance.cert_path}/trembita.pem")
         else:
             response = requests.put(url, json=data, headers=headers, params=query_params)
@@ -244,32 +274,33 @@ def edit_person_in_service(data: dict, config_instance) -> Response:
 
     if not response.content:
         json_body = {"message": "Nothing to display"}
-        return Response(status_code=response.status_code, body=json_body)
+        return CustomResponse(status_code=response.status_code, body=json_body)
 
-    return Response(status_code=response.status_code, body=response.json())
+    return CustomResponse(status_code=response.status_code, body=response.json())
 
 
-def service_delete_person(data: dict, config_instance) -> Response:
+def service_delete_person(data: dict, config_instance) -> CustomResponse:
     base_url = get_base_trembita_uri(config_instance)
     headers = get_uxp_headers_from_config(config_instance)
     query_params = get_uxp_query_params()
 
-    url = base_url + "/unzr/" + str(data["unzr"])
+    url = f"{base_url}/unzr/{str(data["unzr"])}"
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.delete(url, headers=headers, params=query_params,
-                                    cert=(f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
-                                    verify=f"{config_instance.cert_path}/trembita.pem")
+                                       cert=(
+                                       f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
+                                       verify=f"{config_instance.cert_path}/trembita.pem")
         else:
             response = requests.delete(url, headers=headers, params=query_params)
     except Exception as e:
         json_body = {"Error while sending HTTP DELETE": f"{e}"}
-        return Response(status_code=500, body=json_body)
+        return CustomResponse(status_code=500, body=json_body)
 
-    return Response(status_code=response.status_code, body=response.json())
+    return CustomResponse(status_code=response.status_code, body=response.json())
 
 
-def service_add_person(data: dict, config_instance) -> Response:
+def service_add_person(data: dict, config_instance) -> CustomResponse:
     base_url = get_base_trembita_uri(config_instance)
     headers = get_uxp_headers_from_config(config_instance)
     query_params = get_uxp_query_params()
@@ -278,11 +309,35 @@ def service_add_person(data: dict, config_instance) -> Response:
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.post(url, json=data, headers=headers, params=query_params,
-                                    cert=(f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
-                                    verify=f"{config_instance.cert_path}/trembita.pem")
+                                     cert=(
+                                     f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
+                                     verify=f"{config_instance.cert_path}/trembita.pem")
         else:
             response = requests.post(url, json=data, headers=headers, params=query_params)
     except Exception as e:
         json_body = {"Error while sending HTTP POST": f"{e}"}
-        return Response(status_code=500, body=json_body)
-    return Response(status_code=response.status_code, body=response.json())
+        return CustomResponse(status_code=500, body=json_body)
+    return CustomResponse(status_code=response.status_code, body=response.json())
+
+
+def create_dir_if_not_exist(dir_path: str):
+    if not os.path.exists(dir_path):
+        # Создаем директорию, если её нет
+        os.makedirs(dir_path)
+        print(f"Директория '{dir_path}' была создана.")
+    else:
+        print(f"Директория '{dir_path}' уже существует.")
+
+
+def get_files_with_metadata(directory):
+    files_metadata = []
+    for filename in os.listdir(directory):
+        filepath = os.path.join(directory, filename)
+        creation_time = os.path.getctime(filepath)
+        creation_time_str = datetime.fromtimestamp(creation_time).strftime('%Y-%m-%d %H:%M:%S')
+        files_metadata.append({
+            'name': filename,
+            'creation_time': creation_time_str
+        })
+    return files_metadata
+
