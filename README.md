@@ -43,27 +43,57 @@
 
 ```ini
 [trembita]
+
+# Протокол, який використовується для взаємодії з Трембіта (https або http)
 protocol = https
+
+# Хост системи Трембіта
+# можливі варіанти: 192.168.1.1, trembita.example.gov.ua
 host = your_trembita_host
+
+# Ідентифікатор мети для взаємодії з Трембіта через ПМДПД, може бути не заданим якщо обмін відбувається без використання цього модулю.
 purpose_id = your_purpose_id
+
+# Шлях до ssl сертифікатів для взаємодії з Трембіта (директорія буде створена, якщо вона не існує)
 cert_path = path/to/your/certificates
+
+# Шлях для збереження ASIC файлів (директорія буде створена, якщо вона не існує)
 asic_path = path/to/save/asic/files
 
 [client]
+# xRoadInstance (SEVDEIR чи SEVDEIR-TEST)
 instance_name = your_client_instance
+
+# memberClass (GOV) 
 member_class = your_client_member_class
+
+# memberCode - код ЄДРПОУ організації-клієнта
 member_code = your_client_member_code
+
+# subsystemCode - код підсистеми ШБО організації-клієнта, що буде використовуватись для запитів
 subsystem_code = your_client_subsystem_code
 
 [service]
+# xRoadInstance (SEVDEIR чи SEVDEIR-TEST)
 instance_name = your_service_instance
+
+# memberClass (GOV) 
 member_class = your_service_member_class
+
+# memberCode - код ЄДРПОУ організації-клієнта
 member_code = your_service_member_code
+ 
+# subsystemCode - код підсистеми ШБО організації-постачальника, на якій опубліковано сервіс
 subsystem_code = your_service_subsystem_code
+
+# serviceCode - назва сервісу, що опублікований на ШБО організації-постачальника
 service_code = your_service_code
+
+# serviceVersion - версія сервісу, якщо є (зазвичай сервіс не має версії). Якщо сервіс не має версії - не задавати значення
 service_version = your_service_version
 
 [logging]
+# Шлях до файлу логування
 filename = path/to/client.log
 
 # filemode визначає режим, в якому буде відкритий файл логування.
@@ -93,7 +123,6 @@ dateformat = %Y-%m-%d %H:%M:%S
 # ERROR - помилки, які завадили нормальному виконанню
 # CRITICAL - критичні помилки, що призводять до завершення програми
 level = DEBUG
-
 ```
 
 ## Використання
