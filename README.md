@@ -93,35 +93,35 @@ asic_path = path/to/save/asic/files
 
 [client]
 # xRoadInstance (SEVDEIR чи SEVDEIR-TEST)
-instance_name = your_client_instance
+instance = your_client_instance
 
 # memberClass (GOV) 
-member_class = your_client_member_class
+memberClass = your_client_member_class
 
 # memberCode - код ЄДРПОУ організації-клієнта
-member_code = your_client_member_code
+memberCode = your_client_member_code
 
 # subsystemCode - код підсистеми ШБО організації-клієнта, що буде використовуватись для запитів
-subsystem_code = your_client_subsystem_code
+subsystemCode = your_client_subsystem_code
 
 [service]
 # xRoadInstance (SEVDEIR чи SEVDEIR-TEST)
-instance_name = your_service_instance
+instance = your_service_instance
 
 # memberClass (GOV) 
-member_class = your_service_member_class
+memberClass = your_service_member_class
 
 # memberCode - код ЄДРПОУ організації-клієнта
-member_code = your_service_member_code
+memberCode = your_service_member_code
  
 # subsystemCode - код підсистеми ШБО організації-постачальника, на якій опубліковано сервіс
-subsystem_code = your_service_subsystem_code
+subsystemCode = your_service_subsystem_code
 
 # serviceCode - назва сервісу, що опублікований на ШБО організації-постачальника
-service_code = your_service_code
+serviceCode = your_service_code
 
 # serviceVersion - версія сервісу, якщо є (зазвичай сервіс не має версії). Якщо сервіс не має версії - не задавати значення
-service_version = your_service_version
+serviceVersion = your_service_version
 
 [logging]
 # Шлях до файлу логування
