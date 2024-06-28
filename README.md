@@ -39,7 +39,34 @@
     pip install -r requirements.txt
     ```
 
+4. Відредагуйте файл config.ini заповнивши вашими значеннями, згідно з прикладом нижче. 
+5. Запустить проект за допомогою команд
+    ```bash
+    export FLASK_APP=web-client_trembita_sync
+    export FLASK_ENV=development
+    flask run --host=0.0.0.0
+    ```
+6. Відкрийте в браузері посилання 
+   ```bash
+   http://<your_server_ip>:5000
+   ```
 ### Встановлення за допомогою скрипту
+1. Завантажте та запустіть скрипт для клонування репозиторію, встановлення залежностей та налаштування сервісу:
+
+    ```bash
+    wget https://raw.githubusercontent.com/kshypachov/web-client_trembita_sync/main/deploy.sh
+    chmod +x deploy.sh
+    ./deploy.sh
+    ```
+2. Заповніть конфігураційний файл `config.ini` значеннями для вашого середовища. Приклад вмісту файлу наведено нижче.
+3. Запустіть додаток командою:
+    ```bash
+   sudo systemctl start flask-app
+   ```
+4. Відкрийте в браузері посилання 
+   ```bash
+   http://<your_server_ip>:5000
+   ```
 
 ## Конфігурація
 
