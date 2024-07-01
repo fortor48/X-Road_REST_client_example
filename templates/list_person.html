@@ -1,10 +1,10 @@
-{% extends "bootstrap/base.html" %}
+{% extends "bootstrap/base.html" %}  <!-- Розширюємо базовий шаблон Bootstrap -->
 
 {% block content %}
-{% include 'navbar.html' %}
+{% include 'navbar.html' %}  <!-- Включаємо навігаційну панель -->
 
 <div class="container mt-5">
-    <h1 class="mb-4">Картки</h1>
+    <h1 class="mb-4">Картки</h1>  <!-- Заголовок для сторінки з картками -->
     <table class="table table-striped">
         <thead>
             <tr>
@@ -16,28 +16,28 @@
             </tr>
         </thead>
         <tbody>
-            {% for item in data %}
+            {% for item in data %}  <!-- Цикл для проходження по всіх елементах у даних -->
             <tr>
-                <td>{{ item.name }}</td>
-                <td>{{ item.surname }}</td>
-                <td>{{ item.patronym }}</td>
-                <td>{{ item.unzr }}</td>
+                <td>{{ item.name }}</td>  <!-- Відображаємо ім'я -->
+                <td>{{ item.surname }}</td>  <!-- Відображаємо прізвище -->
+                <td>{{ item.patronym }}</td>  <!-- Відображаємо по батькові -->
+                <td>{{ item.unzr }}</td>  <!-- Відображаємо УНЗР -->
                 <td>
-                    <button class="btn btn-info" onclick="showDetails({{ item.id }})">Детальніше</button>
+                    <button class="btn btn-info" onclick="showDetails({{ item.id }})">Детальніше</button>  <!-- Кнопка для відображення деталей -->
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <button class="btn btn-primary" onclick="history.back()">Назад</button>
+    <button class="btn btn-primary" onclick="history.back()">Назад</button>  <!-- Кнопка для повернення на попередню сторінку -->
 </div>
 
-<!-- Модальное окно для отображения и редактирования подробной информации -->
+<!-- Модальне вікно для відображення та редагування докладної інформації -->
 <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="detailsModalLabel">Детальна інформація</h5>
+                <h5 class="modal-title" id="detailsModalLabel">Детальна інформація</h5>  <!-- Заголовок модального вікна -->
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -46,60 +46,61 @@
                 <form id="detailsForm">
                     <div class="form-group">
                         <label for="detailName">Ім'я</label>
-                        <input type="text" class="form-control" id="detailName" disabled>
+                        <input type="text" class="form-control" id="detailName" disabled>  <!-- Поле для відображення імені -->
                     </div>
                     <div class="form-group">
                         <label for="detailSurname">Призвище</label>
-                        <input type="text" class="form-control" id="detailSurname" disabled>
+                        <input type="text" class="form-control" id="detailSurname" disabled>  <!-- Поле для відображення прізвища -->
                     </div>
                     <div class="form-group">
                         <label for="detailPatronym">По батькові</label>
-                        <input type="text" class="form-control" id="detailPatronym" disabled>
+                        <input type="text" class="form-control" id="detailPatronym" disabled>  <!-- Поле для відображення по батькові -->
                     </div>
                     <div class="form-group">
                         <label for="detailDateOfBirth">Дата народження</label>
-                        <input type="text" class="form-control" id="detailDateOfBirth" disabled>
+                        <input type="text" class="form-control" id="detailDateOfBirth" disabled>  <!-- Поле для відображення дати народження -->
                     </div>
                     <div class="form-group">
                         <label for="detailGender">Стать</label>
-                        <select class="form-control" id="detailGender" disabled>
+                        <select class="form-control" id="detailGender" disabled>  <!-- Поле для відображення статі -->
                             <option value="male">Чоловіча</option>
                             <option value="female">Жіноча</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="detailRnokpp">РНОКПП</label>
-                        <input type="text" class="form-control" id="detailRnokpp" disabled>
+                        <input type="text" class="form-control" id="detailRnokpp" disabled>  <!-- Поле для відображення РНОКПП -->
                     </div>
                     <div class="form-group">
                         <label for="detailPassportNumber">Номер паспорту</label>
-                        <input type="text" class="form-control" id="detailPassportNumber" disabled>
+                        <input type="text" class="form-control" id="detailPassportNumber" disabled>  <!-- Поле для відображення номера паспорту -->
                     </div>
                     <div class="form-group">
                         <label for="detailUnzr">УНЗР</label>
-                        <input type="text" class="form-control" id="detailUnzr" disabled>
+                        <input type="text" class="form-control" id="detailUnzr" disabled>  <!-- Поле для відображення УНЗР -->
                     </div>
                 </form>
-                <!-- Блок для сообщений -->
+                <!-- Блок для повідомлень -->
                 <div id="messageBox" class="alert" role="alert" style="display: none;"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
-                <button type="button" class="btn btn-primary" id="editButton" onclick="editDetails()">Редагувати</button>
-                <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteItem()">Видалити</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>  <!-- Кнопка для закриття модального вікна -->
+                <button type="button" class="btn btn-primary" id="editButton" onclick="editDetails()">Редагувати</button>  <!-- Кнопка для редагування -->
+                <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteItem()">Видалити</button>  <!-- Кнопка для видалення -->
             </div>
         </div>
     </div>
 </div>
 
 <script>
-let currentItemId;
+let currentItemId;  // Змінна для збереження поточного ID елемента
 
 function showDetails(id) {
-    currentItemId = id;
-    const item = {{ data|tojson }};
-    const details = item.find(x => x.id === id);
+    currentItemId = id;  // Збереження ID поточного елемента
+    const item = {{ data|tojson }};  // Отримання даних елементів у форматі JSON
+    const details = item.find(x => x.id === id);  // Знаходження потрібного елемента за ID
 
+    // Заповнення полів форми деталями елемента
     document.getElementById('detailName').value = details.name;
     document.getElementById('detailSurname').value = details.surname;
     document.getElementById('detailPatronym').value = details.patronym;
@@ -109,15 +110,15 @@ function showDetails(id) {
     document.getElementById('detailPassportNumber').value = details.passportNumber;
     document.getElementById('detailUnzr').value = details.unzr;
 
-    document.getElementById('editButton').textContent = 'Редагувати';
-    toggleFields(false); // Блокируем поля
+    document.getElementById('editButton').textContent = 'Редагувати';  // Встановлення тексту кнопки редагування
+    toggleFields(false);  // Блокуємо поля форми
 
-    // Скрываем блок сообщений
+    // Приховування блоку повідомлень
     const messageBox = document.getElementById('messageBox');
     messageBox.style.display = 'none';
     messageBox.className = 'alert';
 
-    $('#detailsModal').modal('show');
+    $('#detailsModal').modal('show');  // Відображення модального вікна
 }
 
 function editDetails() {
@@ -125,7 +126,7 @@ function editDetails() {
     const isEditing = editButton.textContent === 'Зберегти';
 
     if (isEditing) {
-        // Сохранить изменения
+        // Збереження змін
         const updatedItem = {
             id: currentItemId,
             name: document.getElementById('detailName').value,
@@ -138,7 +139,7 @@ function editDetails() {
             unzr: document.getElementById('detailUnzr').value,
         };
 
-        // Отправка обновленных данных на сервер
+        // Відправка оновлених даних на сервер
         fetch('/edit', {
             method: 'POST',
             headers: {
@@ -150,17 +151,17 @@ function editDetails() {
             const messageBox = document.getElementById('messageBox');
             if (response.status === 200) {
                 response.json().then(data => {
-                    messageBox.textContent = 'Дані оновлено';
+                    messageBox.textContent = 'Дані оновлено';  // Повідомлення про успішне оновлення
                     messageBox.className = 'alert alert-success';
                     messageBox.style.display = 'block';
                 });
             } else if (response.status === 204) {
-                messageBox.textContent = 'Дані не потребують оновлення';
+                messageBox.textContent = 'Дані не потребують оновлення';  // Повідомлення про відсутність змін
                 messageBox.className = 'alert alert-info';
-                messageBox.style.display = 'block';
+                messageBox.style.display                 = 'block';
             } else {
                 response.json().then(data => {
-                    messageBox.textContent = `Виникла помилка: ${JSON.stringify(data)}`;
+                    messageBox.textContent = `Виникла помилка: ${JSON.stringify(data)}`;  // Повідомлення про помилку
                     messageBox.className = 'alert alert-danger';
                     messageBox.style.display = 'block';
                 });
@@ -168,22 +169,22 @@ function editDetails() {
         })
         .catch(error => {
             const messageBox = document.getElementById('messageBox');
-            messageBox.textContent = `Виникла помилка: ${error.message}`;
+            messageBox.textContent = `Виникла помилка: ${error.message}`;  // Повідомлення про помилку
             messageBox.className = 'alert alert-danger';
             messageBox.style.display = 'block';
         });
 
     } else {
-        // Переключиться в режим редактирования
+        // Переключення в режим редагування
         editButton.textContent = 'Зберегти';
-        toggleFields(true); // Разблокируем поля
+        toggleFields(true);  // Розблокування полів форми
     }
 }
 
 function deleteItem() {
     const unzr = document.getElementById('detailUnzr').value;
 
-    // Отправка запроса на удаление
+    // Відправка запиту на видалення
     fetch('/delete', {
         method: 'POST',
         headers: {
@@ -195,13 +196,13 @@ function deleteItem() {
         const messageBox = document.getElementById('messageBox');
         if (response.status === 200) {
             response.json().then(data => {
-                messageBox.textContent = 'Дані видалено';
+                messageBox.textContent = 'Дані видалено';  // Повідомлення про успішне видалення
                 messageBox.className = 'alert alert-success';
                 messageBox.style.display = 'block';
             });
         } else {
             response.json().then(data => {
-                messageBox.textContent = `Виникла помилка: ${JSON.stringify(data)}`;
+                messageBox.textContent = `Виникла помилка: ${JSON.stringify(data)}`;  // Повідомлення про помилку
                 messageBox.className = 'alert alert-danger';
                 messageBox.style.display = 'block';
             });
@@ -209,7 +210,7 @@ function deleteItem() {
     })
     .catch(error => {
         const messageBox = document.getElementById('messageBox');
-        messageBox.textContent = `Виникла помилка: ${error.message}`;
+        messageBox.textContent = `Виникла помилка: ${error.message}`;  // Повідомлення про помилку
         messageBox.className = 'alert alert-danger';
         messageBox.style.display = 'block';
     });
