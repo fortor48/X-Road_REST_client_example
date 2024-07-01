@@ -4,13 +4,13 @@
 {% include 'navbar.html' %}
 
 <div class="container mt-5">
-    <h1 class="mb-4">Список файлов</h1>
+    <h1 class="mb-4">Список файлів</h1>
     <table class="table table-striped">
         <thead>
             <tr>
-                <th scope="col">Имя файла</th>
-                <th scope="col">Дата и время создания</th>
-                <th scope="col">Действия</th>
+                <th scope="col">Імʼя файлу</th>
+                <th scope="col">Дата и час створення</th>
+                <th scope="col">Дії</th>
             </tr>
         </thead>
         <tbody>
@@ -19,7 +19,7 @@
                 <td>{{ file.name }}</td>
                 <td>{{ file.creation_time }}</td>
                 <td class="button-container">
-                    <a href="{{ url_for('download_file', filename=file.name) }}" class="btn btn-primary download-btn" onmouseover="runAway(this)">Скачать</a>
+                    <a href="{{ url_for('download_file', filename=file.name) }}" class="btn btn-primary download-btn" onmouseover="runAway(this)">Скачати</a>
                 </td>
             </tr>
             {% endfor %}

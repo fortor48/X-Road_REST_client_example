@@ -23,7 +23,7 @@
                 <td>{{ item.patronym }}</td>
                 <td>{{ item.unzr }}</td>
                 <td>
-                    <button class="btn btn-info" onclick="showDetails({{ item.id }})">Подробнее</button>
+                    <button class="btn btn-info" onclick="showDetails({{ item.id }})">Детальніше</button>
                 </td>
             </tr>
             {% endfor %}
@@ -37,7 +37,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="detailsModalLabel">Подробная информация</h5>
+                <h5 class="modal-title" id="detailsModalLabel">Детальна інформація</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -63,8 +63,8 @@
                     <div class="form-group">
                         <label for="detailGender">Стать</label>
                         <select class="form-control" id="detailGender" disabled>
-                            <option value="male">male</option>
-                            <option value="female">female</option>
+                            <option value="male">Чоловіча</option>
+                            <option value="female">Жіноча</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -84,9 +84,9 @@
                 <div id="messageBox" class="alert" role="alert" style="display: none;"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
-                <button type="button" class="btn btn-primary" id="editButton" onclick="editDetails()">Редактировать</button>
-                <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteItem()">Удалить</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                <button type="button" class="btn btn-primary" id="editButton" onclick="editDetails()">Редагувати</button>
+                <button type="button" class="btn btn-danger" id="deleteButton" onclick="deleteItem()">Видалити</button>
             </div>
         </div>
     </div>
@@ -109,7 +109,7 @@ function showDetails(id) {
     document.getElementById('detailPassportNumber').value = details.passportNumber;
     document.getElementById('detailUnzr').value = details.unzr;
 
-    document.getElementById('editButton').textContent = 'Редактировать';
+    document.getElementById('editButton').textContent = 'Редагувати';
     toggleFields(false); // Блокируем поля
 
     // Скрываем блок сообщений
@@ -122,7 +122,7 @@ function showDetails(id) {
 
 function editDetails() {
     const editButton = document.getElementById('editButton');
-    const isEditing = editButton.textContent === 'Сохранить';
+    const isEditing = editButton.textContent === 'Зберегти';
 
     if (isEditing) {
         // Сохранить изменения
@@ -150,17 +150,17 @@ function editDetails() {
             const messageBox = document.getElementById('messageBox');
             if (response.status === 200) {
                 response.json().then(data => {
-                    messageBox.textContent = 'Данные обновлены';
+                    messageBox.textContent = 'Дані оновлено';
                     messageBox.className = 'alert alert-success';
                     messageBox.style.display = 'block';
                 });
             } else if (response.status === 204) {
-                messageBox.textContent = 'Данные не нуждаются в обновлении';
+                messageBox.textContent = 'Дані не потребують оновлення';
                 messageBox.className = 'alert alert-info';
                 messageBox.style.display = 'block';
             } else {
                 response.json().then(data => {
-                    messageBox.textContent = `Произошла ошибка: ${JSON.stringify(data)}`;
+                    messageBox.textContent = `Виникла помилка: ${JSON.stringify(data)}`;
                     messageBox.className = 'alert alert-danger';
                     messageBox.style.display = 'block';
                 });
@@ -168,14 +168,14 @@ function editDetails() {
         })
         .catch(error => {
             const messageBox = document.getElementById('messageBox');
-            messageBox.textContent = `Произошла ошибка: ${error.message}`;
+            messageBox.textContent = `Виникла помилка: ${error.message}`;
             messageBox.className = 'alert alert-danger';
             messageBox.style.display = 'block';
         });
 
     } else {
         // Переключиться в режим редактирования
-        editButton.textContent = 'Сохранить';
+        editButton.textContent = 'Зберегти';
         toggleFields(true); // Разблокируем поля
     }
 }
@@ -195,13 +195,13 @@ function deleteItem() {
         const messageBox = document.getElementById('messageBox');
         if (response.status === 200) {
             response.json().then(data => {
-                messageBox.textContent = 'Данные удалены';
+                messageBox.textContent = 'Дані видалено';
                 messageBox.className = 'alert alert-success';
                 messageBox.style.display = 'block';
             });
         } else {
             response.json().then(data => {
-                messageBox.textContent = `Произошла ошибка: ${JSON.stringify(data)}`;
+                messageBox.textContent = `Виникла помилка: ${JSON.stringify(data)}`;
                 messageBox.className = 'alert alert-danger';
                 messageBox.style.display = 'block';
             });
@@ -209,7 +209,7 @@ function deleteItem() {
     })
     .catch(error => {
         const messageBox = document.getElementById('messageBox');
-        messageBox.textContent = `Произошла ошибка: ${error.message}`;
+        messageBox.textContent = `Виникла помилка: ${error.message}`;
         messageBox.className = 'alert alert-danger';
         messageBox.style.display = 'block';
     });

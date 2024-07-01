@@ -7,22 +7,22 @@
     <h2>Пошук у БД</h2>
     <form method="POST" action="/">
         <div class="form-group">
-            <label for="search-field">Выберите поле для поиска</label>
+            <label for="search-field">Оберіть поле для пошуку</label>
             <select class="form-control" id="search-field" name="search_field" required>
-                <option value="name">Имя</option>
-                <option value="surname">Фамилия</option>
-                <option value="patronymic">Отчество</option>
-                <option value="dob">Дата рождения</option>
-                <option value="passportNumber">Номер паспорта</option>
+                <option value="name">Імʼя</option>
+                <option value="surname">Призвище</option>
+                <option value="patronymic">По батькові</option>
+                <option value="dob">Дата народження</option>
+                <option value="passportNumber">Номер паспорту</option>
                 <option value="unzr">УНЗР</option>
                 <option value="rnokpp">РНОКРР</option>
             </select>
         </div>
         <div class="form-group">
-            <label for="search-value">Значение для поиска</label>
+            <label for="search-value">Значення для пошуку</label>
             <input type="text" class="form-control" id="search-value" name="search_value" required>
         </div>
-        <button type="submit" class="btn btn-primary">Поиск</button>
+        <button type="submit" class="btn btn-primary">Пошук</button>
     </form>
 </div>
 {% endblock %}
