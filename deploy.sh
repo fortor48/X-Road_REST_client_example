@@ -40,4 +40,4 @@ sudo systemctl daemon-reload
 
 # Включение и запуск Flask-приложения
 sudo systemctl enable flask-app
-sudo systemctl start flask-app
+#sudo systemctl start flask-app
