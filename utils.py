@@ -31,26 +31,26 @@ class Config:
         self.parser = configparser.ConfigParser(interpolation=None)
         self.parser.read(filename)
 
-        # Присваивание конфигурационных параметров как атрибутов класса
-        # Trembita security server section
+        # Зчитування конфігураційних параметрів як атрибутів класу
+        # Секція параметрів взаємодії з шлюзом безпечного обміну Трембіти
         self.trembita_protocol = self.parser.get('trembita', 'protocol')
         self.trembita_host = self.parser.get('trembita', 'host')
         self.trembita_purpose = self.parser.get('trembita', 'purpose_id') # For MDPD
         self.cert_path = self.parser.get('trembita', 'cert_path')
         self.asic_path = self.parser.get('trembita', 'asic_path')
-        # Orginization client section
+        # Секція ідентифікаторів клієнтської підсистеми Трембіти
         self.client_instance = self.parser.get('client', 'instance')
         self.client_org_type = self.parser.get('client', 'memberClass')
         self.client_org_code = self.parser.get('client', 'memberCode')
         self.client_org_sub = self.parser.get('client', 'subsystemCode')
-        # Orginization service section
+        # Секція ідентифікаторів сервісу
         self.service_instance = self.parser.get('service', 'instance')
         self.service_org_type = self.parser.get('service', 'memberClass')
         self.service_org_code = self.parser.get('service', 'memberCode')
         self.service_org_sub = self.parser.get('service', 'subsystemCode')
         self.service_org_name = self.parser.get('service', 'serviceCode')
         self.service_org_version = self.parser.get('service', 'serviceVersion')
-        # logging section
+        # Секція параметрів логування роботи додатку
         self.log_filename = self.parser.get('logging', 'filename')
         self.log_filemode = self.parser.get('logging', 'filemode')
         self.log_format = self.parser.get('logging', 'format')
@@ -79,8 +79,8 @@ def configure_logging(config_instance):
     logger.info("Логування налаштовано")
 
 def download_asic_from_trembita(asics_dir: str, queryId: str, config_instance):
-    # https: // sec1.gov / signature? & queryId = abc12345 & xRoadInstance = EE & memberClass = ENT & memberCode =
-    # CLIENT1 & subsystemCode = SUB
+    # https: // sec1.gov / signature? & queryId = abc12345 & xRoadInstance = SEVDEIR-TEST & memberClass = GOV & memberCode =
+    # 12345678 & subsystemCode = SUB
     query_params = {
         "queryId": queryId,
         "xRoadInstance": config_instance.client_instance,
@@ -91,10 +91,10 @@ def download_asic_from_trembita(asics_dir: str, queryId: str, config_instance):
 
     if config_instance.trembita_protocol == "https":
         url = f"https://{config_instance.trembita_host}/signature"
-        logger.info(f"Спроба завантажити ASIC з Trembita з URL: {url} та параметрами: {query_params}")
+        logger.info(f"Спроба завантажити ASIC з ШБО з URL: {url} та параметрами: {query_params}")
 
         try:
-            # Отправляем GET-запрос для скачивания файла
+            # Надсилаємо GET-запит для завантаження файла з архівом повідомлень
             response = requests.get(url, stream=True, params=query_params,
                                     cert=(f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
                                     verify=f"{config_instance.cert_path}/trembita.pem")
@@ -103,22 +103,22 @@ def download_asic_from_trembita(asics_dir: str, queryId: str, config_instance):
             logger.info(f"Успішно отримано відповідь від сервера з кодом: {response.status_code}")
 
 
-            # Пытаемся получить имя файла из заголовка Content-Disposition
+            # Спроба отримати ім'я файлу з заголовку Content-Disposition
             content_disposition = response.headers.get('Content-Disposition')
             if content_disposition:
-                # Паттерн для извлечения имени файла
+                # Паттерн для визначення імені файлу
                 filename_match = re.findall('filename="(.+)"', content_disposition)
                 if filename_match:
                     local_filename = filename_match[0]
                 else:
                     local_filename = 'downloaded_file.ext'
             else:
-                # Если заголовка нет, используем имя по умолчанию
+                # Якщо заголовку немає, використовуємо ім'я за замовчуванням
                 local_filename = 'downloaded_file.ext'
 
-            # Открываем локальный файл в режиме записи байтов
+            # Відкриваємо локальний файл в режимі запису байтів
             with open(f"{asics_dir}/{local_filename}", 'wb') as file:
-                # Проходим по частям ответа и записываем их в файл
+                # Проходимо по частинах відповіді і записуємо їх у файл
                 for chunk in response.iter_content(chunk_size=8192):
                     file.write(chunk)
             logger.info(f'Файл успішно завантажено та збережено як:  {local_filename}')
@@ -127,7 +127,7 @@ def download_asic_from_trembita(asics_dir: str, queryId: str, config_instance):
             raise
     else:
         logger.error("Функція download_asic_from_trembita працює тільки з протоколом https")
-        raise ValueError("Ця функція процюе тільки якщо протокол роботи з Трембітою - https!!!")
+        raise ValueError("Ця функція процює тільки якщо протокол роботи з ШБО Трембіти - https")
 
 
 def generate_key_cert(key: str, crt: str, path: str):
@@ -138,16 +138,16 @@ def generate_key_cert(key: str, crt: str, path: str):
         key_size=2048,
     )
 
-    # Создание объекта для сертификата
+    # Створення x509 об'єкту для сертифікату
     subject = issuer = x509.Name([
         x509.NameAttribute(NameOID.COUNTRY_NAME, "UA"),
-        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Kiev"),
-        x509.NameAttribute(NameOID.LOCALITY_NAME, "Kiev"),
+        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Kyiv"),
+        x509.NameAttribute(NameOID.LOCALITY_NAME, "Kyiv"),
         x509.NameAttribute(NameOID.ORGANIZATION_NAME, "The Best Company"),
         x509.NameAttribute(NameOID.COMMON_NAME, "test.com"),
     ])
 
-    # Создание самоподписанного сертификата
+    # Створення самопідписаного сертифікату
     cert = x509.CertificateBuilder().subject_name(
         subject
     ).issuer_name(
@@ -159,14 +159,14 @@ def generate_key_cert(key: str, crt: str, path: str):
     ).not_valid_before(
         datetime.datetime.utcnow()
     ).not_valid_after(
-        # Сертификат будет действителен в течение одного года
+        # Сертифікат буде чинним протягом одного року
         datetime.datetime.utcnow() + datetime.timedelta(days=365)
     ).add_extension(
         x509.SubjectAlternativeName([x509.DNSName("test.com")]),
         critical=False,
     ).sign(private_key, hashes.SHA256())
 
-    # Сохранение приватного ключа в файл
+    # Збереження особистого ключа у файл
     key_full_path = os.path.join(path, key)
     try:
         with open(key_full_path, "wb") as f:
@@ -177,14 +177,14 @@ def generate_key_cert(key: str, crt: str, path: str):
             ))
         logger.info(f"Ключ збережено у {key_full_path}")
 
-        # Сохранение сертификата в файл
+        # Збереження сертифікату у файл
         crt_full_path = os.path.join(path, crt)
 
         with open(crt_full_path, "wb") as f:
             f.write(cert.public_bytes(serialization.Encoding.PEM))
         logger.info(f"Сертифікат збережено у {crt_full_path}")
     except IOError as e:
-        logger.error(f"Помилка під час збереження ключа або сертифіката: {e}")
+        logger.error(f"Помилка під час збереження ключа або сертифікату: {e}")
         raise
 
 def get_uxp_headers_from_config(config_instance) -> dict:
@@ -226,8 +226,8 @@ def get_uxp_query_params() -> dict:
     uxp_user_id_name = "userId"
 
     uxp_query_id_value = str(uuid.uuid4())
-    uxp_user_id_value = "Flask_client"  # можна задати будьяке значення, при обміні це імʼя
-    # буде збережено на ШБО, та його можна буде побачити наприклад за допомогою веріфаєра.
+    uxp_user_id_value = "Flask_client"  # можна задати будь-яке значення, при обміні це імʼя
+    # буде збережено на ШБО, та його можна буде побачити, наприклад, за допомогою інструмента перевірки транзакцій UXP Verifier.
 
     params = {
         uxp_query_id_name: uxp_query_id_value,
@@ -239,7 +239,7 @@ def get_uxp_query_params() -> dict:
 
 
 def get_base_trembita_uri(config_instance) -> str:
-    logger.debug("Формування базового URI Trembita")
+    logger.debug("Формування базового URL ШБО Трембіти клієнта")
     if config_instance.trembita_protocol == "https":
         uri = f"https://{config_instance.trembita_host}/restapi"
     else:
@@ -273,7 +273,7 @@ def get_person_from_service(parameter: str, value: str, config_instance) -> list
     if response.status_code == 200:
         json_data = response.json()
         message_list = json_data.get('message', [])
-        logger.info("Запит на отримання їнформації оброблено")
+        logger.info("Запит на отримання інформації оброблено")
         logger.debug(f"Отримано інформацію про особу: {message_list}")
         return message_list
     logger.error(f"Отримано HTTP код: {response.status_code}, повідомлення про помилку: {response.text}")
@@ -364,11 +364,11 @@ def service_add_person(data: dict, config_instance) -> CustomResponse:
 def create_dir_if_not_exist(dir_path: str):
     logger.info(f"Перевірка існування директорії: {dir_path}")
     if not os.path.exists(dir_path):
-        # Создаем директорию, если её нет
+        # Створюємо директорію, якщо її немає
         os.makedirs(dir_path)
-        logger.info(f"Директория '{dir_path}' була створена.")
+        logger.info(f"Директорія '{dir_path}' була створена.")
     else:
-        logger.info(f"Директория '{dir_path}' вже існує.")
+        logger.info(f"Директорія '{dir_path}' вже існує.")
 
 
 def get_files_with_metadata(directory):
