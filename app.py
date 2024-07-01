@@ -6,7 +6,7 @@ import utils
 import os
 import logging
 
-
+# Зчитування параметрів додатку з конфігураційного файлу
 conf = utils.Config('config.ini')
 
 # Налаштування логування
