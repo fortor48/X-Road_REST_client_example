@@ -43,13 +43,13 @@
             <label for="rnokpp">РНОКРР</label>
             <input type="text" class="form-control" id="rnokpp" name="rnokpp" required>
         </div>
-        <button type="submit" class="btn btn-primary">Создать запис</button>
+        <button type="submit" class="btn btn-primary">Створити запис</button>
     </form>
 </div>
 
 <script>
 document.getElementById('createForm').addEventListener('submit', function(event) {
-    event.preventDefault();  // Предотвращаем обычное отправление формы
+    event.preventDefault();  // Запобігаємо стандартному відправленню форми
 
     const form = event.target;
     const formData = new FormData(form);
@@ -70,20 +70,20 @@ document.getElementById('createForm').addEventListener('submit', function(event)
     .then(response => {
         if (response.status === 200) {
             response.json().then(data => {
-                messageBox.textContent = 'Запись успешно создана!';
+                messageBox.textContent = 'Запис успішно створено!';
                 messageBox.className = 'alert alert-success';
                 messageBox.style.display = 'block';
             });
         } else if (response.status === 422) {
             response.json().then(data => {
-                messageBox.textContent = `Произошла ошибка: ${JSON.stringify(data)}`;
+                messageBox.textContent = `Виникла помилка: ${JSON.stringify(data)}`;
                 messageBox.className = 'alert alert-danger';
                 messageBox.style.display = 'block';
             });
         }
     })
     .catch(error => {
-        messageBox.textContent = `Произошла ошибка: ${error.message}`;
+        messageBox.textContent = `Виникла помилка: ${error.message}`;
         messageBox.className = 'alert alert-danger';
         messageBox.style.display = 'block';
     });
