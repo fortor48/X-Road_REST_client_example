@@ -38,6 +38,9 @@ class Config:
         self.trembita_purpose = self.parser.get('trembita', 'purpose_id') # For MDPD
         self.cert_path = self.parser.get('trembita', 'cert_path')
         self.asic_path = self.parser.get('trembita', 'asic_path')
+        self.cert_file = self.parser.get('trembita', 'cert_file')
+        self.key_file = self.parser.get('trembita', 'key_file')
+        self.tembita_cert_file = self.parser.get('trembita', 'trembita_cert_file')
         # Orginization client section
         self.client_instance = self.parser.get('client', 'instance')
         self.client_org_type = self.parser.get('client', 'memberClass')
@@ -93,11 +96,12 @@ def download_asic_from_trembita(asics_dir: str, queryId: str, config_instance):
         url = f"https://{config_instance.trembita_host}/signature"
         logger.info(f"Спроба завантажити ASIC з Trembita з URL: {url} та параметрами: {query_params}")
 
+
         try:
             # Отправляем GET-запрос для скачивания файла
             response = requests.get(url, stream=True, params=query_params,
-                                    cert=(f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
-                                    verify=f"{config_instance.cert_path}/trembita.pem")
+                                    cert=(os.path.join(config_instance.cert_path, config_instance.cert_file), os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                    verify=os.path.join(config_instance.cert_path, config_instance.tembita_cert_file))
             response.raise_for_status()
 
             logger.info(f"Успішно отримано відповідь від сервера з кодом: {response.status_code}")
@@ -259,9 +263,8 @@ def get_person_from_service(parameter: str, value: str, config_instance) -> list
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.get(encoded_url, headers=headers, params=query_params,
-                                    cert=(
-                                    f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
-                                    verify=f"{config_instance.cert_path}/trembita.pem")
+                                    cert=(os.path.join(config_instance.cert_path, config_instance.cert_file), os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                    verify=os.path.join(config_instance.cert_path, config_instance.tembita_cert_file))
         else:
             response = requests.get(encoded_url, headers=headers, params=query_params)
 
@@ -290,9 +293,8 @@ def edit_person_in_service(data: dict, config_instance) -> CustomResponse:
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.put(url, json=data, headers=headers, params=query_params,
-                                    cert=(
-                                    f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
-                                    verify=f"{config_instance.cert_path}/trembita.pem")
+                                    cert=(os.path.join(config_instance.cert_path, config_instance.cert_file), os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                    verify=os.path.join(config_instance.cert_path, config_instance.tembita_cert_file))
         else:
             response = requests.put(url, json=data, headers=headers, params=query_params)
 
@@ -319,9 +321,8 @@ def service_delete_person(data: dict, config_instance) -> CustomResponse:
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.delete(url, headers=headers, params=query_params,
-                                       cert=(
-                                       f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
-                                       verify=f"{config_instance.cert_path}/trembita.pem")
+                                       cert=(os.path.join(config_instance.cert_path, config_instance.cert_file), os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                       verify=os.path.join(config_instance.cert_path, config_instance.tembita_cert_file))
         else:
             response = requests.delete(url, headers=headers, params=query_params)
     except Exception as e:
@@ -343,9 +344,8 @@ def service_add_person(data: dict, config_instance) -> CustomResponse:
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.post(url, json=data, headers=headers, params=query_params,
-                                     cert=(
-                                     f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
-                                     verify=f"{config_instance.cert_path}/trembita.pem")
+                                     cert=(os.path.join(config_instance.cert_path, config_instance.cert_file), os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                     verify=os.path.join(config_instance.cert_path, config_instance.tembita_cert_file))
         else:
             response = requests.post(url, json=data, headers=headers, params=query_params)
 
