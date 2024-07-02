@@ -37,15 +37,17 @@ if not os.path.exists(private_key_full_path) or not os.path.exists(certificate_f
     utils.generate_key_cert(key, cert, crt_directory)
 
 
+# Ініціалізація додатку
 app = Flask(__name__)
 Bootstrap(app)
 logger.info("Додаток Flask ініціалізовано.")
 
 
+# Опис функціоналу обробки HTTP запитів
 @app.route('/', methods=['GET', 'POST'])
-def serch_user():
+def search_user():
     logger.debug(f"Отримано {'POST' if request.method == 'POST' else 'GET'} запит на маршрут '/'.")
-    if request.method == 'POST': # Прийшов запит з даними від форми (на пошук за одним з параметрів), обробляемо
+    if request.method == 'POST': # Прийшов запит з даними від форми (на пошук за одним з параметрів), обробляємо
         search_field = request.form.get('search_field')
         search_value = request.form.get('search_value')
 
@@ -58,13 +60,13 @@ def serch_user():
             return render_template('error.html', error_message=e,  current_page='index')
         return render_template('list_person.html', data=data,  current_page='index')
 
-    return render_template('search_form.html',  current_page='index') # Прийшов GET запит, просто віддаємо веб сторінку
+    return render_template('search_form.html',  current_page='index') # Прийшов GET запит, просто віддаємо вебсторінку
 
 
 @app.route('/create', methods=['GET', 'POST'])
 def create_user():
     logger.debug(f"Отримано {'POST' if request.method == 'POST' else 'GET'} запит на маршрут '/create'.")
-    if request.method == 'POST': # Прийшов запит з даними від форми (на створеня особи), обробляемо
+    if request.method == 'POST': # Прийшов запит з даними від форми (на створення об'єкта користувача), обробляємо
         try:
             form_data = request.get_json()
             logger.debug(f"Отримано запит на створення з параметрами: {form_data}")
@@ -73,10 +75,10 @@ def create_user():
             return resp
         except Exception as e:
             logger.debug(f"Виникла помилка: {str(e)}")
-            resp = jsonify(message=f'Ошибка при создании записи: {str(e)}'), 422
+            resp = jsonify(message=f'Помилка при створенні об’єкта користувача: {str(e)}'), 422
             return resp
 
-    return render_template('create_person.html',  current_page='create') # Прийшов GET запит, просто віддаємо веб сторінку
+    return render_template('create_person.html',  current_page='create') # Прийшов GET запит, просто віддаємо вебсторінку
 
 
 @app.route('/edit', methods = ['POST'])
@@ -88,7 +90,7 @@ def edit_user():
         http_resp = utils.edit_person_in_service(data, conf)
     except Exception as e:
         logger.error(f"Виникла помилка: {str(e)}")
-        resp = jsonify(message=f"Data NOT received successfully: error: {str(e)}"), 500
+        resp = jsonify(message=f"Виникла помилка при обробці запиту на редагування: error: {str(e)}"), 500
         return resp
     return jsonify(message=http_resp.body), http_resp.status_code
 
@@ -97,12 +99,12 @@ def edit_user():
 def delete_person():
     logger.debug("Отримано POST запит на маршрут '/delete'.")
     data = request.get_json()
-    logger.debug(f"Отримано дані для видалення: {data}")
+    logger.debug(f"Отримано запит на видалення: {data}")
     try:
         http_resp = utils.service_delete_person(data, conf)
     except Exception as e:
         logger.error(f"Виникла помилка: {str(e)}")
-        resp = jsonify(message=f"Data NOT received successfully: error: {str(e)}"), 500
+        resp = jsonify(message=f"Виникла помилка при обробці запиту на видалення: error: {str(e)}"), 500
         return resp
     return jsonify(message= http_resp.body), http_resp.status_code
 
@@ -134,7 +136,7 @@ def list_files():
 def download_file(filename):
     logger.debug(f"Отримано GET запит на маршрут '/download/{filename}'.")
     ASIC_DIR = os.path.join(os.getcwd(), asic_directory)
-    safe_filename = os.path.basename(filename)  # Обезопашиваем путь
+    safe_filename = os.path.basename(filename)  # Валідація шляху файлової системи
     try:
         return send_from_directory(ASIC_DIR, safe_filename, as_attachment=True)
     except Exception as e:
@@ -176,6 +178,7 @@ def list_certs():
         logger.error(f"Виникла помилка: {str(e)}")
         return render_template('error.html', error_message=e, current_page='certs')
 
+# Запуск додатку
 if __name__ == '__main__':
     #sys.stdout.reconfigure(encoding='utf-8')
     logger.info("Запуск додатку Flask.")
