@@ -9,7 +9,7 @@
         <thead>
             <tr>
                 <th scope="col">Ім'я</th>
-                <th scope="col">Призвище</th>
+                <th scope="col">Прізвище</th>
                 <th scope="col">По батькові</th>
                 <th scope="col">УНЗР</th>
                 <th scope="col">Дії</th>
@@ -49,7 +49,7 @@
                         <input type="text" class="form-control" id="detailName" disabled>  <!-- Поле для відображення імені -->
                     </div>
                     <div class="form-group">
-                        <label for="detailSurname">Призвище</label>
+                        <label for="detailSurname">Прізвище</label>
                         <input type="text" class="form-control" id="detailSurname" disabled>  <!-- Поле для відображення прізвища -->
                     </div>
                     <div class="form-group">
@@ -158,7 +158,7 @@ function editDetails() {
             } else if (response.status === 204) {
                 messageBox.textContent = 'Дані не потребують оновлення';  // Повідомлення про відсутність змін
                 messageBox.className = 'alert alert-info';
-                messageBox.style.display                 = 'block';
+                messageBox.style.display = 'block';
             } else {
                 response.json().then(data => {
                     messageBox.textContent = `Виникла помилка: ${JSON.stringify(data)}`;  // Повідомлення про помилку

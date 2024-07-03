@@ -1,21 +1,21 @@
 #!/bin/bash
 
-# Обновление пакетов и установка необходимых зависимостей
+# Оновлення пакетів і встановлення необхідних залежностей
 sudo apt update
 sudo apt install -y git python3 python3-pip python3-venv
 
-# Клонирование репозитория
+# Клонування репозиторію
 git clone https://github.com/kshypachov/web-client_trembita_sync.git
 cd web-client_trembita_sync
 
-# Создание и активация виртуального окружения
+# Створення та активація віртуального оточення
 python3 -m venv venv
 source venv/bin/activate
 
-# Установка зависимостей
+# Встановлення залежностей
 pip install -r requirements.txt
 
-# Создание Unit файла для systemd
+# Створення Unit файлу системної служби для systemd
 SERVICE_FILE=/etc/systemd/system/flask-app.service
 
 sudo bash -c "cat > $SERVICE_FILE" <<EOL
@@ -35,9 +35,9 @@ Restart=always
 WantedBy=multi-user.target
 EOL
 
-# Перезагрузка systemd для применения изменений
+# Перезавантаження systemd для застосування змін
 sudo systemctl daemon-reload
 
-# Включение и запуск Flask-приложения
+# Увімкнення та запуск Flask-застосунку
 sudo systemctl enable flask-app
 #sudo systemctl start flask-app

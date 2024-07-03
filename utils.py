@@ -326,6 +326,7 @@ def service_delete_person(data: dict, config_instance) -> CustomResponse:
     query_params = get_uxp_query_params()
 
     url = f"{base_url}/unzr/{data['unzr']}"
+
     logger.info(f"Видалення інформації про особу з id: {data['unzr']}")
     try:
         if config_instance.trembita_protocol == "https":
