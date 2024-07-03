@@ -26,9 +26,8 @@ After=network.target
 [Service]
 User=$USER
 WorkingDirectory=$(pwd)
-Environment="FLASK_APP=app.py"
-Environment="FLASK_ENV=development"
-ExecStart=$(pwd)/venv/bin/flask run --host=0.0.0.0
+Environment="PATH=$(pwd)/venv/bin"
+ExecStart=$(pwd)/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:8000 app:app
 Restart=always
 
 [Install]
