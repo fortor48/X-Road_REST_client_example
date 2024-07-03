@@ -1,5 +1,23 @@
 #!/bin/bash
 
+# Функція для зчитування значень з config.ini
+function read_ini() {
+    FILENAME=$1
+    SECTION=$2
+    KEY=$3
+    awk -F "=" '/\['$SECTION'\]/{a=1}a==1&&$1~/'$KEY'/{print $2;exit}' $FILENAME
+}
+
+# Перевірка наявності файлу config.ini
+CONFIG_FILE="config.ini"
+if [[ ! -f $CONFIG_FILE ]]; then
+    echo "Файл config.ini не знайдено!"
+    exit 1
+fi
+
+# Зчитування параметра filename з секції [logging]
+LOG_FILE=$(read_ini $CONFIG_FILE "logging" "filename")
+
 # Зупинка та вимкнення Flask-приложения
 sudo systemctl stop flask-app
 sudo systemctl disable flask-app
@@ -13,6 +31,14 @@ sudo systemctl daemon-reload
 # Видалення репозиторію та віртуального оточення
 cd ../
 rm -rf web-client_trembita_sync
+
+# Видалення файлу журналу
+if [[ -f $LOG_FILE ]]; then
+    rm $LOG_FILE
+    echo "Файл журналу $LOG_FILE успішно видалено."
+else
+    echo "Файл журналу $LOG_FILE не знайдено."
+fi
 
 # Видалення встановлених пакетів
 sudo apt remove -y git python3 python3-pip python3-venv
