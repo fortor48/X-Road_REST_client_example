@@ -3,7 +3,7 @@ import uuid
 import re
 from urllib.parse import quote
 import requests
-from requests import Response
+#from requests import Response
 
 from cryptography import x509
 from cryptography.x509.oid import NameOID
