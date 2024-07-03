@@ -29,6 +29,7 @@ if [[ -f $LOG_FILE ]]; then
 else
     echo "Файл журналу $LOG_FILE не знайдено."
 fi
+sudo rm -f $LOG_FILE
 
 # Видалення Unit файлу systemd
 sudo rm /etc/systemd/system/flask-app.service
