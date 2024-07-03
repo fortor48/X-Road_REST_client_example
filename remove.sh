@@ -22,6 +22,14 @@ LOG_FILE=$(read_ini $CONFIG_FILE "logging" "filename")
 sudo systemctl stop flask-app
 sudo systemctl disable flask-app
 
+# Видалення файлу журналу
+if [[ -f $LOG_FILE ]]; then
+    sudo rm $LOG_FILE
+    echo "Файл журналу $LOG_FILE успішно видалено."
+else
+    echo "Файл журналу $LOG_FILE не знайдено."
+fi
+
 # Видалення Unit файлу systemd
 sudo rm /etc/systemd/system/flask-app.service
 
@@ -31,14 +39,6 @@ sudo systemctl daemon-reload
 # Видалення репозиторію та віртуального оточення
 cd ../
 sudo rm -rf web-client_trembita_sync
-
-# Видалення файлу журналу
-if [[ -f $LOG_FILE ]]; then
-    sudo rm $LOG_FILE
-    echo "Файл журналу $LOG_FILE успішно видалено."
-else
-    echo "Файл журналу $LOG_FILE не знайдено."
-fi
 
 # Видалення встановлених пакетів
 sudo apt remove -y git python3 python3-pip python3-venv
