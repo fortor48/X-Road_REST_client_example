@@ -27,7 +27,7 @@ After=network.target
 User=$USER
 WorkingDirectory=$(pwd)
 Environment="PATH=$(pwd)/venv/bin"
-ExecStart=$(pwd)/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:8000 app:app
+ExecStart=$(pwd)/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 app:app
 Restart=always
 
 [Install]
