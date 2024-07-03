@@ -26,7 +26,7 @@ After=network.target
 [Service]
 User=$USER
 WorkingDirectory=$(pwd)
-Environment="FLASK_APP=web-client_trembita_sync"
+Environment="FLASK_APP=app.py"
 Environment="FLASK_ENV=development"
 ExecStart=$(pwd)/venv/bin/flask run --host=0.0.0.0
 Restart=always
