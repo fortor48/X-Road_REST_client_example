@@ -14,8 +14,8 @@ import datetime
 import os
 import logging
 
-
 logger = logging.getLogger(__name__)
+
 
 class CustomResponse:
     def __init__(self, status_code: int, body: dict):
@@ -35,9 +35,12 @@ class Config:
         # Секція параметрів взаємодії з шлюзом безпечного обміну Трембіти
         self.trembita_protocol = self.parser.get('trembita', 'protocol')
         self.trembita_host = self.parser.get('trembita', 'host')
-        self.trembita_purpose = self.parser.get('trembita', 'purpose_id') # For MDPD
+        self.trembita_purpose = self.parser.get('trembita', 'purpose_id')  # For MDPD
         self.cert_path = self.parser.get('trembita', 'cert_path')
         self.asic_path = self.parser.get('trembita', 'asic_path')
+        self.cert_file = self.parser.get('trembita', 'cert_file')
+        self.key_file = self.parser.get('trembita', 'key_file')
+        self.tembita_cert_file = self.parser.get('trembita', 'trembita_cert_file')
         # Секція ідентифікаторів клієнтської підсистеми Трембіти
         self.client_instance = self.parser.get('client', 'instance')
         self.client_org_type = self.parser.get('client', 'memberClass')
@@ -57,13 +60,12 @@ class Config:
         self.log_dateformat = self.parser.get('logging', 'dateformat')
         self.log_level = self.parser.get('logging', 'level')
 
-
     def get(self, section, option):
         return self.parser.get(section, option)
 
 
 def configure_logging(config_instance):
-    log_filename =  config_instance.log_filename
+    log_filename = config_instance.log_filename
     log_filemode = config_instance.log_filemode
     log_format = config_instance.log_format
     log_datefmt = config_instance.log_dateformat
@@ -78,9 +80,13 @@ def configure_logging(config_instance):
     )
     logger.info("Логування налаштовано")
 
-def download_asic_from_trembita(asics_dir: str, queryId: str, config_instance):
+
+def download_asic_from_trembita(queryId: str, config_instance):
     # https: // sec1.gov / signature? & queryId = abc12345 & xRoadInstance = SEVDEIR-TEST & memberClass = GOV & memberCode =
     # 12345678 & subsystemCode = SUB
+
+    asics_dir = config_instance.asic_path  # Отримуємо з конфігураційного файлу путь до директорії куди слід зберігати asic контейнери
+
     query_params = {
         "queryId": queryId,
         "xRoadInstance": config_instance.client_instance,
@@ -96,12 +102,12 @@ def download_asic_from_trembita(asics_dir: str, queryId: str, config_instance):
         try:
             # Надсилаємо GET-запит для завантаження файла з архівом повідомлень
             response = requests.get(url, stream=True, params=query_params,
-                                    cert=(f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
-                                    verify=f"{config_instance.cert_path}/trembita.pem")
+                                    cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
+                                          os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                    verify=os.path.join(config_instance.cert_path, config_instance.tembita_cert_file))
             response.raise_for_status()
 
             logger.info(f"Успішно отримано відповідь від сервера з кодом: {response.status_code}")
-
 
             # Спроба отримати ім'я файлу з заголовку Content-Disposition
             content_disposition = response.headers.get('Content-Disposition')
@@ -187,6 +193,7 @@ def generate_key_cert(key: str, crt: str, path: str):
         logger.error(f"Помилка під час збереження ключа або сертифікату: {e}")
         raise
 
+
 def get_uxp_headers_from_config(config_instance) -> dict:
     logger.debug("Формування заголовків UXP")
     uxp_client_header_name = "UXP-Client"
@@ -259,13 +266,15 @@ def get_person_from_service(parameter: str, value: str, config_instance) -> list
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.get(encoded_url, headers=headers, params=query_params,
-                                    cert=(
-                                    f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
-                                    verify=f"{config_instance.cert_path}/trembita.pem")
+                                    cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
+                                          os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                    verify=os.path.join(config_instance.cert_path, config_instance.tembita_cert_file))
+
+            download_asic_from_trembita(query_params.get('queryId'), config_instance)
         else:
             response = requests.get(encoded_url, headers=headers, params=query_params)
 
-        download_asic_from_trembita("asic", query_params.get('queryId'), config_instance)
+
     except Exception as e:
         logger.error(f"Помилка під час отримання інформації про особу: {e}")
         raise ValueError(f"Error while sending HTTP GET: {e}")
@@ -290,9 +299,11 @@ def edit_person_in_service(data: dict, config_instance) -> CustomResponse:
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.put(url, json=data, headers=headers, params=query_params,
-                                    cert=(
-                                    f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
-                                    verify=f"{config_instance.cert_path}/trembita.pem")
+                                    cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
+                                          os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                    verify=os.path.join(config_instance.cert_path, config_instance.tembita_cert_file))
+
+            download_asic_from_trembita(query_params.get('queryId'), config_instance)
         else:
             response = requests.put(url, json=data, headers=headers, params=query_params)
 
@@ -319,9 +330,12 @@ def service_delete_person(data: dict, config_instance) -> CustomResponse:
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.delete(url, headers=headers, params=query_params,
-                                       cert=(
-                                       f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
-                                       verify=f"{config_instance.cert_path}/trembita.pem")
+                                       cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
+                                             os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                       verify=os.path.join(config_instance.cert_path,
+                                                           config_instance.tembita_cert_file))
+
+            download_asic_from_trembita(query_params.get('queryId'), config_instance)
         else:
             response = requests.delete(url, headers=headers, params=query_params)
     except Exception as e:
@@ -343,9 +357,11 @@ def service_add_person(data: dict, config_instance) -> CustomResponse:
     try:
         if config_instance.trembita_protocol == "https":
             response = requests.post(url, json=data, headers=headers, params=query_params,
-                                     cert=(
-                                     f"{config_instance.cert_path}/crt.pem", f"{config_instance.cert_path}/key.pem"),
-                                     verify=f"{config_instance.cert_path}/trembita.pem")
+                                     cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
+                                           os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                     verify=os.path.join(config_instance.cert_path, config_instance.tembita_cert_file))
+
+            download_asic_from_trembita(query_params.get('queryId'), config_instance)
         else:
             response = requests.post(url, json=data, headers=headers, params=query_params)
 
@@ -384,4 +400,3 @@ def get_files_with_metadata(directory):
         })
     logger.info(f"Метадані файлів отримано: {files_metadata}")
     return files_metadata
-

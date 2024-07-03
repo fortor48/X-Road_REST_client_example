@@ -22,8 +22,8 @@ logger.debug("Початок ініціалізації додатку")
 
 crt_directory = conf.cert_path
 asic_directory = conf.asic_path
-key = "key.pem"
-cert = "crt.pem"
+key = conf.key_file
+cert = conf.cert_file
 
 # Створення директорій
 utils.create_dir_if_not_exist(crt_directory)
@@ -143,6 +143,40 @@ def download_file(filename):
         logger.error(f"Виникла помилка: {str(e)}")
         return render_template('error.html', error_message=e, current_page='files')
 
+
+@app.route('/download_cert/<filename>')
+def download_cert(filename):
+    logger.debug(f"Отримано GET запит на маршрут '/download_cert/{filename}'.")
+    CERT_DIR = os.path.join(os.getcwd(), crt_directory)
+    safe_filename = os.path.basename(filename)  # Обезопашиваем путь
+    try:
+        return send_from_directory(CERT_DIR, safe_filename, as_attachment=True)
+    except Exception as e:
+        logger.error(f"Виникла помилка: {str(e)}")
+        return render_template('error.html', error_message=e, current_page='certs')
+
+@app.route('/certs')
+def list_certs():
+    logger.debug("Отримано GET запит на маршрут '/certs'.")
+    try:
+        files = []
+        for filename in os.listdir(crt_directory):
+            filepath = os.path.join(crt_directory, filename)
+            if os.path.isfile(filepath):
+                creation_time = datetime.fromtimestamp(os.path.getctime(filepath))
+                files.append({
+                    'name': filename,
+                    'creation_time': creation_time.strftime('%Y-%m-%d %H:%M:%S')
+                })
+
+        # Sort files by creation time (descending order)
+        files = sorted(files, key=lambda x: x['creation_time'], reverse=True)
+        logger.debug("Список сертифікатів отримано успішно.")
+
+        return render_template('list_certs.html', files=files, current_page='certs')
+    except Exception as e:
+        logger.error(f"Виникла помилка: {str(e)}")
+        return render_template('error.html', error_message=e, current_page='certs')
 
 # Запуск додатку
 if __name__ == '__main__':
