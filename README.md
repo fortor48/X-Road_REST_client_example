@@ -50,7 +50,7 @@
 4. Відредагуйте файл config.ini заповнивши вашими значеннями, згідно з прикладом конфігурації, наведеним у розділі нижче. 
 5. Запустіть проєкт за допомогою команд
     ```bash
-    export FLASK_APP=web-client_trembita_sync
+    export FLASK_APP=app
     export FLASK_ENV=development
     flask run --host=0.0.0.0
     ```
