@@ -30,11 +30,11 @@ sudo systemctl daemon-reload
 
 # Видалення репозиторію та віртуального оточення
 cd ../
-rm -rf web-client_trembita_sync
+sudo rm -rf web-client_trembita_sync
 
 # Видалення файлу журналу
 if [[ -f $LOG_FILE ]]; then
-    rm $LOG_FILE
+    sudo rm $LOG_FILE
     echo "Файл журналу $LOG_FILE успішно видалено."
 else
     echo "Файл журналу $LOG_FILE не знайдено."
