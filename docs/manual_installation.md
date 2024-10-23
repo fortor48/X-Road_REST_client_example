@@ -143,7 +143,11 @@ level = DEBUG
 ### 6. Запуск клієнту
 Запустіть клієнт командою:
 
+
 ```bash
-gunicorn --workers 2 --bind 0.0.0.0:5000 app:app
+export FLASK_APP=app.py
+export FLASK_ENV=development
+flask run --host=0.0.0.0
 ```
+
 Кліент працює на порту 5000, комунікація з клієнтом відбувається за допомогою веб браузера.

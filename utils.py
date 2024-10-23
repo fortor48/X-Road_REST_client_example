@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives import serialization
 import datetime
 import os
 import logging
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -28,37 +29,64 @@ class CustomResponse:
 
 class Config:
     def __init__(self, filename):
-        self.parser = configparser.ConfigParser(interpolation=None)
-        self.parser.read(filename)
+        # Перевіряємо, чи встановлена змінна оточення USE_ENV_CONFIG в true
+        use_env_config = os.getenv("USE_ENV_CONFIG", "false").lower() == "true"
 
-        # Зчитування конфігураційних параметрів як атрибутів класу
-        # Секція параметрів взаємодії з шлюзом безпечного обміну Трембіти
-        self.trembita_protocol = self.parser.get('trembita', 'protocol')
-        self.trembita_host = self.parser.get('trembita', 'host')
-        self.trembita_purpose = self.parser.get('trembita', 'purpose_id')  # For MDPD
-        self.cert_path = self.parser.get('trembita', 'cert_path')
-        self.asic_path = self.parser.get('trembita', 'asic_path')
-        self.cert_file = self.parser.get('trembita', 'cert_file')
-        self.key_file = self.parser.get('trembita', 'key_file')
-        self.tembita_cert_file = self.parser.get('trembita', 'trembita_cert_file')
-        # Секція ідентифікаторів клієнтської підсистеми Трембіти
-        self.client_instance = self.parser.get('client', 'instance')
-        self.client_org_type = self.parser.get('client', 'memberClass')
-        self.client_org_code = self.parser.get('client', 'memberCode')
-        self.client_org_sub = self.parser.get('client', 'subsystemCode')
+        if not use_env_config:
+            # Якщо змінна USE_ENV_CONFIG не встановлена в true, читаємо конфігураційний файл
+            self.parser = configparser.ConfigParser(interpolation=None)
+            self.parser.read(filename)
+        else:
+            # Якщо змінна USE_ENV_CONFIG встановлена в true, ігноруємо конфігураційний файл
+            self.parser = None
+
+        # Функція для отримання значення з змінної оточення або конфігураційного файлу
+        def get_config_value(section, option, default=None, required=False):
+            env_var = f"{section.upper()}_{option.upper()}"
+            if use_env_config:
+                # Якщо використовуємо змінні оточення, зчитуємо значення тільки з них
+                value = os.getenv(env_var, default)
+            else:
+                # Якщо змінна USE_ENV_CONFIG пуста, використовуємо тільки файл конфігурації
+                value = self.parser.get(section, option, fallback=default)
+
+            # Перевірка на обов'язковість параметра
+            if required and not value:
+                err_str = f"Помилка: Змінна оточення '{section.upper()}_{option.upper()}' є обовʼязковою. Задайте її значення будь ласка."
+                logger.critical(err_str)
+                raise ValueError(err_str)#
+
+            return value
+
+        # Зчитування конфігурації
+        # Секція Трембіта
+        self.trembita_protocol = get_config_value('trembita', 'protocol', required=True)
+        self.trembita_host = get_config_value('trembita', 'host', required=True)
+        self.trembita_purpose = get_config_value('trembita', 'purpose_id', '')
+        self.cert_path = get_config_value('trembita', 'cert_path', 'certs')
+        self.asic_path = get_config_value('trembita', 'asic_path', 'asic')
+        self.cert_file = get_config_value('trembita', 'cert_file', 'cert.pem')
+        self.key_file = get_config_value('trembita', 'key_file', 'key.pem')
+        self.tembita_cert_file = get_config_value('trembita', 'trembita_cert_file' , 'trembita.pem')
+        # Секція ідентифікаторів клієнтської підсистеми
+        self.client_instance = get_config_value('client', 'instance', required=True)
+        self.client_org_type = get_config_value('client', 'memberClass', required=True)
+        self.client_org_code = get_config_value('client', 'memberCode', required=True)
+        self.client_org_sub = get_config_value('client', 'subsystemCode', required=True)
         # Секція ідентифікаторів сервісу
-        self.service_instance = self.parser.get('service', 'instance')
-        self.service_org_type = self.parser.get('service', 'memberClass')
-        self.service_org_code = self.parser.get('service', 'memberCode')
-        self.service_org_sub = self.parser.get('service', 'subsystemCode')
-        self.service_org_name = self.parser.get('service', 'serviceCode')
-        self.service_org_version = self.parser.get('service', 'serviceVersion')
-        # Секція параметрів логування роботи додатку
-        self.log_filename = self.parser.get('logging', 'filename')
-        self.log_filemode = self.parser.get('logging', 'filemode')
-        self.log_format = self.parser.get('logging', 'format')
-        self.log_dateformat = self.parser.get('logging', 'dateformat')
-        self.log_level = self.parser.get('logging', 'level')
+        self.service_instance = get_config_value('service', 'instance', required=True)
+        self.service_org_type = get_config_value('service', 'memberClass', required=True)
+        self.service_org_code = get_config_value('service', 'memberCode', required=True)
+        self.service_org_sub = get_config_value('service', 'subsystemCode', required=True)
+        self.service_org_name = get_config_value('service', 'serviceCode', required=True)
+        self.service_org_version = get_config_value('service', 'serviceVersion')
+        # Параметри логування
+        self.log_filename = get_config_value('logging', 'filename')
+        self.log_filemode = get_config_value('logging', 'filemode', 'a')
+        self.log_format = get_config_value('logging', 'format', '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        self.log_dateformat = get_config_value('logging', 'dateformat', '%Y-%m-%d %H:%M:%S')
+        self.log_level = get_config_value('logging', 'level', 'INFO', required=True)
+
 
     def get(self, section, option):
         return self.parser.get(section, option)
@@ -71,21 +99,32 @@ def configure_logging(config_instance):
     log_datefmt = config_instance.log_dateformat
     log_level = config_instance.log_level
 
-    logging.basicConfig(
-        filename=log_filename,
-        filemode=log_filemode,
-        format=log_format,
-        datefmt=log_datefmt,
-        level=getattr(logging, log_level, logging.DEBUG)
-    )
-    logger.info("Логування налаштовано")
+    #Якщо log_filename не передано, логування відбувається у консоль.
+    if log_filename:
+        # Логування у файл
+        logging.basicConfig(
+            filename=log_filename,
+            filemode=log_filemode,
+            format=log_format,
+            datefmt=log_datefmt,
+            level=getattr(logging, log_level, logging.INFO)
+        )
+        logger.info("Логування налаштовано")
 
+    else:
+        # Логування в консоль для Docker
+        logging.basicConfig(
+            format=log_format,
+            datefmt=log_datefmt,
+            level=log_level,
+            handlers=[logging.StreamHandler()]  # Вывод в stdout
+        )
 
 def download_asic_from_trembita(queryId: str, config_instance):
     # https: // sec1.gov / signature? & queryId = abc12345 & xRoadInstance = SEVDEIR-TEST & memberClass = GOV & memberCode =
     # 12345678 & subsystemCode = SUB
-
-    asics_dir = config_instance.asic_path  # Отримуємо з конфігураційного файлу путь до директорії куди слід зберігати asic контейнери
+    # Отримання ASIC контейнера з ШБО за допомогою GET-запиту
+    asics_dir = config_instance.asic_path  # Отримуємо з конфігураційного файлу шлях до директорії, куди слід зберігати asic контейнери
 
     query_params = {
         "queryId": queryId,
@@ -100,7 +139,7 @@ def download_asic_from_trembita(queryId: str, config_instance):
         logger.info(f"Спроба завантажити ASIC з ШБО з URL: {url} та параметрами: {query_params}")
 
         try:
-            # Надсилаємо GET-запит для завантаження файла з архівом повідомлень
+            # Надсилаємо GET-запит для завантаження файлу з архівом повідомлень
             response = requests.get(url, stream=True, params=query_params,
                                     cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
                                           os.path.join(config_instance.cert_path, config_instance.key_file)),
@@ -137,6 +176,7 @@ def download_asic_from_trembita(queryId: str, config_instance):
 
 
 def generate_key_cert(key: str, crt: str, path: str):
+    # Генерація особистого ключа та сертифіката
     logger.info("Генерація ключа та сертифіката")
     logger.debug(f"Імʼя файлу ключа: {key}, імʼя файлу сертифіката: {crt}, директорія: {path}")
     private_key = rsa.generate_private_key(
@@ -183,7 +223,7 @@ def generate_key_cert(key: str, crt: str, path: str):
             ))
         logger.info(f"Ключ збережено у {key_full_path}")
 
-        # Збереження сертифікату у файл
+        # Збереження сертифіката у файл
         crt_full_path = os.path.join(path, crt)
 
         with open(crt_full_path, "wb") as f:
@@ -195,6 +235,7 @@ def generate_key_cert(key: str, crt: str, path: str):
 
 
 def get_uxp_headers_from_config(config_instance) -> dict:
+    # Формування заголовків UXP для запитів
     logger.debug("Формування заголовків UXP")
     uxp_client_header_name = "UXP-Client"
     uxp_service_header_name = "UXP-Service"
@@ -228,6 +269,7 @@ def get_uxp_headers_from_config(config_instance) -> dict:
 
 
 def get_uxp_query_params() -> dict:
+    # Генерація унікальних параметрів запиту для UXP
     logger.debug("Генерація UXP параметрів запиту")
     uxp_query_id_name = "queryId"
     uxp_user_id_name = "userId"
@@ -246,6 +288,7 @@ def get_uxp_query_params() -> dict:
 
 
 def get_base_trembita_uri(config_instance) -> str:
+    # Формування базового URI для доступу до сервісу Трембіта
     logger.debug("Формування базового URL ШБО Трембіти клієнта")
     if config_instance.trembita_protocol == "https":
         uri = f"https://{config_instance.trembita_host}/restapi"
@@ -256,6 +299,7 @@ def get_base_trembita_uri(config_instance) -> str:
 
 
 def get_person_from_service(parameter: str, value: str, config_instance) -> list:
+    # Отримання інформації про особу за параметром через сервіс Трембіта
     base_uri = get_base_trembita_uri(config_instance)
     headers = get_uxp_headers_from_config(config_instance)
     query_params = get_uxp_query_params()
@@ -265,6 +309,7 @@ def get_person_from_service(parameter: str, value: str, config_instance) -> list
     logger.info(f"Отримання інформації про особу з сервісу за параметром: {parameter} та значенням: {value}")
     try:
         if config_instance.trembita_protocol == "https":
+            # Відправлення HTTPS запиту для отримання даних про особу
             response = requests.get(encoded_url, headers=headers, params=query_params,
                                     cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
                                           os.path.join(config_instance.cert_path, config_instance.key_file)),
@@ -272,6 +317,7 @@ def get_person_from_service(parameter: str, value: str, config_instance) -> list
 
             download_asic_from_trembita(query_params.get('queryId'), config_instance)
         else:
+            # Відправлення HTTP запиту для отримання даних про особу
             response = requests.get(encoded_url, headers=headers, params=query_params)
 
 
@@ -290,6 +336,7 @@ def get_person_from_service(parameter: str, value: str, config_instance) -> list
 
 
 def edit_person_in_service(data: dict, config_instance) -> CustomResponse:
+    # Редагування інформації про особу через сервіс Трембіта
     base_url = get_base_trembita_uri(config_instance)
     headers = get_uxp_headers_from_config(config_instance)
     query_params = get_uxp_query_params()
@@ -298,6 +345,7 @@ def edit_person_in_service(data: dict, config_instance) -> CustomResponse:
     logger.debug(f"Редагування інформації про особу: {data}")
     try:
         if config_instance.trembita_protocol == "https":
+            # Відправлення HTTPS запиту для редагування інформації про особу
             response = requests.put(url, json=data, headers=headers, params=query_params,
                                     cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
                                           os.path.join(config_instance.cert_path, config_instance.key_file)),
@@ -305,6 +353,7 @@ def edit_person_in_service(data: dict, config_instance) -> CustomResponse:
 
             download_asic_from_trembita(query_params.get('queryId'), config_instance)
         else:
+            # Відправлення HTTP запиту для редагування інформації про особу
             response = requests.put(url, json=data, headers=headers, params=query_params)
 
     except requests.exceptions.RequestException as e:
@@ -321,6 +370,7 @@ def edit_person_in_service(data: dict, config_instance) -> CustomResponse:
 
 
 def service_delete_person(data: dict, config_instance) -> CustomResponse:
+    # Видалення інформації про особу через сервіс Трембіта
     base_url = get_base_trembita_uri(config_instance)
     headers = get_uxp_headers_from_config(config_instance)
     query_params = get_uxp_query_params()
@@ -330,6 +380,7 @@ def service_delete_person(data: dict, config_instance) -> CustomResponse:
     logger.info(f"Видалення інформації про особу з id: {data['unzr']}")
     try:
         if config_instance.trembita_protocol == "https":
+            # Відправлення HTTPS запиту для видалення особи
             response = requests.delete(url, headers=headers, params=query_params,
                                        cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
                                              os.path.join(config_instance.cert_path, config_instance.key_file)),
@@ -338,6 +389,7 @@ def service_delete_person(data: dict, config_instance) -> CustomResponse:
 
             download_asic_from_trembita(query_params.get('queryId'), config_instance)
         else:
+            # Відправлення HTTP запиту для видалення особи
             response = requests.delete(url, headers=headers, params=query_params)
     except Exception as e:
         json_body = {"Error while sending HTTP DELETE": f"{e}"}
@@ -349,6 +401,7 @@ def service_delete_person(data: dict, config_instance) -> CustomResponse:
 
 
 def service_add_person(data: dict, config_instance) -> CustomResponse:
+    # Додавання нової особи через сервіс Трембіта
     base_url = get_base_trembita_uri(config_instance)
     headers = get_uxp_headers_from_config(config_instance)
     query_params = get_uxp_query_params()
@@ -357,6 +410,7 @@ def service_add_person(data: dict, config_instance) -> CustomResponse:
     logger.info(f"Додавання нової особи: {data}")
     try:
         if config_instance.trembita_protocol == "https":
+            # Відправлення HTTPS запиту для додавання нової особи
             response = requests.post(url, json=data, headers=headers, params=query_params,
                                      cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
                                            os.path.join(config_instance.cert_path, config_instance.key_file)),
@@ -364,6 +418,7 @@ def service_add_person(data: dict, config_instance) -> CustomResponse:
 
             download_asic_from_trembita(query_params.get('queryId'), config_instance)
         else:
+            # Відправлення HTTP запиту для додавання нової особи
             response = requests.post(url, json=data, headers=headers, params=query_params)
 
         if response.status_code > 400:
@@ -379,6 +434,7 @@ def service_add_person(data: dict, config_instance) -> CustomResponse:
 
 
 def create_dir_if_not_exist(dir_path: str):
+    # Створення директорії, якщо вона не існує
     logger.info(f"Перевірка існування директорії: {dir_path}")
     if not os.path.exists(dir_path):
         # Створюємо директорію, якщо її немає
@@ -389,6 +445,7 @@ def create_dir_if_not_exist(dir_path: str):
 
 
 def get_files_with_metadata(directory):
+    # Отримання списку файлів з метаданими у вказаній директорії
     logger.info(f"Отримання метаданих файлів у директорії: {directory}")
     files_metadata = []
     for filename in os.listdir(directory):
