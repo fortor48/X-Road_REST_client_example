@@ -33,6 +33,7 @@ RUN adduser \
 
 # Create the certs directory and set correct permissions
 RUN mkdir -p /app/certs && chown -R appuser:appuser /app/certs
+RUN mkdir -p /app/asic && chown -R appuser:appuser /app/asic
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
