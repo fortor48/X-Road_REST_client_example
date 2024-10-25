@@ -55,9 +55,9 @@ EXPOSE 5000
 ARG FLASK_APP=app.py
 
 # Run the application.
-CMD gunicorn --bind 0.0.0.0:5000 app:app
+#CMD gunicorn --bind 0.0.0.0:5000 app:app
 
-#ARG FLASK_APP=app.py
+ARG FLASK_APP=app.py
 #ARG FLASK_ENV=development
-#ARG FLASK_DEBUG=0
-#CMD python -m flask run --host=0.0.0.0 --port=8080
+ARG FLASK_DEBUG=0
+CMD python -m flask run --host=0.0.0.0 --port=5000
