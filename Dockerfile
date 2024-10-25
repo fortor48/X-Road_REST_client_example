@@ -55,7 +55,7 @@ EXPOSE 5000
 ARG FLASK_APP=app.py
 
 # Run the application.
-CMD gunicorn --bind 0.0.0.0:8080 app:app
+CMD gunicorn --bind 0.0.0.0:5000 app:app
 
 #ARG FLASK_APP=app.py
 #ARG FLASK_ENV=development
