@@ -142,7 +142,7 @@ def list_files():
         files = sorted(files, key=lambda x: x['creation_time'], reverse=True)
         logger.debug("Список файлів отримано успішно.")
 
-        return render_template('list_files_run_away.html', files=files, current_page='files')
+        return render_template('list_files.html', files=files, current_page='files')
     except Exception as e:
         logger.error(f"Виникла помилка: {str(e)}")
         return render_template('error.html', error_message=e, current_page='files')
