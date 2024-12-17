@@ -239,6 +239,7 @@ def get_uxp_headers_from_config(config_instance) -> dict:
     logger.debug("Формування заголовків UXP")
     uxp_client_header_name = "UXP-Client"
     uxp_service_header_name = "UXP-Service"
+    uxp_sevice_purpose_id = "Uxp-Purpose-Ids"
 
     uxp_client_header_value = (
         f"{config_instance.client_instance}/"
@@ -260,9 +261,12 @@ def get_uxp_headers_from_config(config_instance) -> dict:
     else:
         uxp_service_header_value = base_service_value
 
+    purpose_id_value = config_instance.trembita_purpose
+
     headers = {
         uxp_client_header_name: uxp_client_header_value,
-        uxp_service_header_name: uxp_service_header_value
+        uxp_service_header_name: uxp_service_header_value,
+        uxp_sevice_purpose_id: purpose_id_value
     }
     logger.debug(f"Заголовки UXP сформовано: {headers}")
     return headers

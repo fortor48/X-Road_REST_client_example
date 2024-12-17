@@ -51,7 +51,6 @@ COPY . .
 
 # Expose the port that the application listens on.
 EXPOSE 5000
-
 ARG FLASK_APP=app.py
 
 # Run the application.
