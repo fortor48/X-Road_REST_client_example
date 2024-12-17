@@ -136,7 +136,7 @@ level = DEBUG
 
 6. Запустіть клієнт командою:
 ```bash
-sudo systemctl enable flask-app
+sudo systemctl start flask-app
 ```
 
 7. Відкрийте в браузері посилання:
