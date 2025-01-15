@@ -16,35 +16,34 @@
 
 ```
 web-client_trembita_sync/
-├── Dockerfile
-├── LICENSE
-├── README.Docker.md
-├── README.md
-├── app.py
-├── asic
-├── certs
-│    ├── cert.pem
+├── Dockerfile                    # Докер файл для контейнерезації застосунку   
+├── LICENSE                       # Ліцензія
+├── README.Docker.md              # Документація
+├── README.md                     # Документація
+├── app.py                        # Точка входу застосунку
+├── asic                          # Папка для збереженя асік контейнерів з результатами обмінів
+├── certs                         # Папка для ключа та сертифіката додатку для https, та для сертифікату ШБО 
+│    ├── cert.pem       
 │    └── key.pem
-├── compose.yaml
-├── config.ini
-├── deploy.sh
-├── docs
-│    ├── docker_installation.md
-│    ├── manual_installation.md
-│    └── script_installation.md
-├── remove.sh
-├── requirements.txt
-├── templates
-│    ├── create_person.html
-│    ├── error.html
-│    ├── list_certs.html
-│    ├── list_files.html
-│    ├── list_files_run_aawy.html
-│    ├── list_person.html
-│    ├── navbar.html
-│    ├── search_form.html
-│    └── user_form.html
-└── utils.py
+├── compose.yaml                    
+├── config.ini                    # Конфігураційний файл застосунку
+├── deploy.sh                     # Скрипт автоматичного встановлення
+├── docs                          # Документація 
+│    ├── docker_installation.md   # Документація
+│    ├── manual_installation.md   # Документація
+│    └── script_installation.md   # Документація
+├── remove.sh                     # Скрипт автоматичного видалення
+├── requirements.txt              # Залежності застосунку
+├── templates                     # Папка з шаблонами веб сторінок застосунку 
+│    ├── create_person.html       # Шаблон веб сторінки
+│    ├── error.html               # Шаблон веб сторінки
+│    ├── list_certs.html          # Шаблон веб сторінки
+│    ├── list_files.html          # Шаблон веб сторінки
+│    ├── list_person.html         # Шаблон веб сторінки
+│    ├── navbar.html              # Шаблон веб сторінки
+│    ├── search_form.html         # Шаблон веб сторінки
+│    └── user_form.html           # Шаблон веб сторінки
+└── utils.py                      # Бібліотека взаемодії з Трембітою
 ```
 ## Розгортання
 
