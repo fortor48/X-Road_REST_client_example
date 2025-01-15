@@ -139,15 +139,49 @@ dateformat = %Y-%m-%d %H:%M:%S
 # CRITICAL - критичні помилки, що призводять до завершення програми
 level = DEBUG
 ```
+### 6. Налаштування та запуск сервісу як systemd-сервіс
 
-### 6. Запуск клієнту
-Запустіть клієнт командою:
-
+Перевірте за допомогою команди `pwd` що ви знаходитесь у директорії `web-client_trembita_sync`. 
+Створіть systemd unit-файл для запуску сервісу:
 
 ```bash
-export FLASK_APP=app.py
-export FLASK_ENV=development
-flask run --host=0.0.0.0
+sudo bash -c "cat > /etc/systemd/system/flask-app.service" << EOL
+[Unit]
+Description=Flask Application
+After=network.target
+
+[Service]
+User=$USER
+WorkingDirectory=$(pwd)
+Environment="PATH=$(pwd)/venv/bin"
+ExecStart=$(pwd)/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 app:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOL
+```
+
+#### Перезапуск systemd та запуск клієнта
+
+1.	Перезавантажте конфігурацію systemd:
+```bash
+sudo systemctl daemon-reload
+```
+
+2.	Запустіть клієнт:
+```bash
+sudo systemctl start flask-app
+```
+
+3. Додайте клієнт до автозапуску:
+```bash
+sudo systemctl enable flask-app
+```
+
+4.	Перевірте статус клієнта:
+```bash
+sudo systemctl status flask-app
 ```
 
 Кліент працює на порту 5000, комунікація з клієнтом відбувається за допомогою веб браузера.
