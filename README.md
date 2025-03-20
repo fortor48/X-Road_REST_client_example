@@ -62,9 +62,9 @@ web-client_trembita_sync/
 Клієнт можна інсталювати за допомогою скрипта автоматичного встановлення або вручну. Також клієнт може працювати в Docker.
 
 - [Інсталяція клієнту за допомогою скрипта автоматичного встановлення](./docs/script_installation.md).
-- [Інсталяція сервісу вручну](./docs/manual_installation.md).
-- [Конфігурація сервісу](./docs/configuration.md).
-- [Pозгортання вебсервісу в Docker ](./docs/docker_installation.md).
+- [Інсталяція клієнту вручну](./docs/manual_installation.md).
+- [Конфігурація клієнту](./docs/configuration.md).
+- [Pозгортання вебклієнту в Docker ](./docs/docker_installation.md).
 
 ## Адміністрування сервісу
 
@@ -127,7 +127,7 @@ chmod +x remove.sh
 Для того, щоб переглянути журнал подій вебклієнту необхідно виконати команду:
 
 ```bash
-journalctl -u flask-app -f
+journalctl -u fastapi_trembita_client -f
 ```
 
 ### Налаштування HTTPS
