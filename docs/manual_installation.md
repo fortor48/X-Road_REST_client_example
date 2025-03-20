@@ -18,13 +18,13 @@ sudo apt install -y git python3 python3-pip python3-venv
 ### 2. Клонувати репозиторій
 
 ```bash
-git clone https://github.com/MadCat-88/Trembita_Py_R_SyncCli.git
+git clone https://github.com/kshypachov/web-client_trembita_sync.git
 ```
 
 ### 3. Перейти до директорії з вебклієнтом
 
 ```bash
-cd Trembita_Py_R_SyncCli
+cd web-client_trembita_sync
 ```
 
 ### 4. Створити віртуальне середовище
