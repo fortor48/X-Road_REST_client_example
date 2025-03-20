@@ -36,7 +36,7 @@
 1. Клонувати репозиторій:
 
 ```bash
-wget https://raw.githubusercontent.com/kshypachov/web-client_trembita_sync/refs/heads/master/deploy.sh
+git clone https://github.com/kshypachov/web-client_trembita_sync.git
 ```
 
 2. Перейти до директорії з вебклієнтом:
