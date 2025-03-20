@@ -16,7 +16,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Створення Unit файлу системної служби для systemd
-SERVICE_FILE=/etc/systemd/system/flask-app.service
+SERVICE_FILE=/etc/systemd/system/fastapi_trembita_client.service
 
 sudo bash -c "cat > $SERVICE_FILE" <<EOL
 [Unit]
