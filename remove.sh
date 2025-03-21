@@ -19,8 +19,8 @@ fi
 LOG_FILE=$(read_ini $CONFIG_FILE "logging" "filename")
 
 # Зупинка та вимкнення Flask-приложения
-sudo systemctl stop flask-app
-sudo systemctl disable flask-app
+sudo systemctl stop fastapi_trembita_client
+sudo systemctl disable fastapi_trembita_client
 
 # Видалення файлу журналу
 if [[ -f $LOG_FILE ]]; then
@@ -32,7 +32,7 @@ fi
 sudo rm -f $LOG_FILE
 
 # Видалення Unit файлу systemd
-sudo rm /etc/systemd/system/flask-app.service
+sudo rm /etc/systemd/system/fastapi_trembita_client.service
 
 # Перезагрузка systemd для застосування змін
 sudo systemctl daemon-reload
@@ -48,4 +48,4 @@ sudo apt remove -y git python3 python3-pip python3-venv
 sudo apt autoremove -y
 sudo apt clean
 
-echo "Flask-приложение та всі його залежності успішно видалені."
+echo "fastapi_trembita_client та всі його залежності успішно видалені."
