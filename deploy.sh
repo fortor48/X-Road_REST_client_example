@@ -37,6 +37,6 @@ EOL
 # Перезавантаження systemd для застосування змін
 sudo systemctl daemon-reload
 
-# Увімкнення та запуск Flask-застосунку
-sudo systemctl enable flask-app
-#sudo systemctl start flask-app
+# Увімкнення та запуск вебклієнту
+sudo systemctl enable fastapi_trembita_client
+#sudo systemctl start fastapi_trembita_client
