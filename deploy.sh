@@ -16,7 +16,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Створення Unit файлу системної служби для systemd
-SERVICE_FILE=/etc/systemd/system/flask-app.service
+SERVICE_FILE=/etc/systemd/system/fastapi_trembita_client.service
 
 sudo bash -c "cat > $SERVICE_FILE" <<EOL
 [Unit]
@@ -37,6 +37,6 @@ EOL
 # Перезавантаження systemd для застосування змін
 sudo systemctl daemon-reload
 
-# Увімкнення та запуск Flask-застосунку
-sudo systemctl enable flask-app
-#sudo systemctl start flask-app
+# Увімкнення та запуск вебклієнту
+sudo systemctl enable fastapi_trembita_client
+#sudo systemctl start fastapi_trembita_client
