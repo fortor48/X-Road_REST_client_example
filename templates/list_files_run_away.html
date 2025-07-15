@@ -1,37 +1,37 @@
 {% extends "bootstrap/base.html" %}
 
 {% block content %}
-<!-- Включаємо панель навігації -->
+<!-- Include the navigation bar -->
 {% include 'navbar.html' %}
 
-<!-- Контейнер для списку файлів -->
+<!-- Container for the file list -->
 <div class="container mt-5">
-    <h1 class="mb-4">Список файлів</h1>
-    <!-- Таблиця для відображення файлів -->
+    <h1 class="mb-4">File List</h1>
+    <!-- Table to display the list of files -->
     <table class="table table-striped">
         <thead>
             <tr>
-                <th scope="col">Імʼя файлу</th>
-                <th scope="col">Дата і час створення</th>
-                <th scope="col">Дії</th>
+                <th scope="col">File Name</th>
+                <th scope="col">Creation Date and Time</th>
+                <th scope="col">Actions</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Перебір файлів у змінній files та відображення їх в таблиці -->
+            <!-- Loop through the 'files' variable and display each file in the table -->
             {% for file in files %}
             <tr>
                 <td>{{ file.name }}</td>
                 <td>{{ file.creation_time }}</td>
-                <!-- Кнопка для завантаження файлу -->
+                <!-- Button to download the file -->
                 <td class="button-container">
-                    <a href="{{ url_for('download_file', filename=file.name) }}" class="btn btn-primary download-btn" onmouseover="runAway(this)">Скачати</a>
+                    <a href="{{ url_for('download_file', filename=file.name) }}" class="btn btn-primary download-btn" onmouseover="runAway(this)">Download</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <!-- Кнопка для повернення на попередню сторінку -->
-    <button class="btn btn-primary" onclick="history.back()">Назад</button>
+    <!-- Button to go back to the previous page -->
+    <button class="btn btn-primary" onclick="history.back()">Go Back</button>
 </div>
 
 <style>
@@ -46,30 +46,30 @@
 </style>
 
 <script>
-    // Збереження початкових позицій кнопок
+    // Store initial positions of buttons
     let originalPositions = new Map();
 
     function runAway(button) {
-        // Якщо початкові позиції не збережені, зберігаємо їх
+        // Save initial position if not already saved
         if (!originalPositions.has(button)) {
             const rect = button.getBoundingClientRect();
             originalPositions.set(button, { left: rect.left, top: rect.top });
         }
 
-        // Отримуємо розміри кнопки та вікна
+        // Get button and window dimensions
         const buttonWidth = button.offsetWidth;
         const buttonHeight = button.offsetHeight;
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
 
-
+        // Generate new random position
         const newLeft = Math.random() * (windowWidth - buttonWidth);
         const newTop = Math.random() * (windowHeight - buttonHeight);
 
-
+        // Move button to new position
         button.style.transform = `translate(${newLeft - originalPositions.get(button).left}px, ${newTop - originalPositions.get(button).top}px)`;
 
-
+        // Return button to original position after 1 second
         setTimeout(() => {
             button.style.transform = 'translate(0, 0)';
         }, 1000);

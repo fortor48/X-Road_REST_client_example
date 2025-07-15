@@ -1,30 +1,30 @@
-{% extends "bootstrap/base.html" %}  <!-- Розширюємо базовий шаблон Bootstrap -->
+{% extends "bootstrap/base.html" %}  <!-- Extend the base Bootstrap template -->
 
 {% block content %}
-{% include 'navbar.html' %}  <!-- Включаємо навігаційну панель -->
+{% include 'navbar.html' %}  <!-- Include the navigation bar -->
 
 <div class="container mt-5">
-    <h1 class="mb-4">Список файлів</h1>  <!-- Заголовок для сторінки зі списком файлів -->
-    <table class="table table-striped">  <!-- Таблиця для відображення файлів зі стилем "смугаста таблиця" -->
+    <h1 class="mb-4">File List</h1>  <!-- Heading for the file list page -->
+    <table class="table table-striped">  <!-- Table to display files with striped style -->
         <thead>
             <tr>
-                <th scope="col">Імʼя файлу</th>  <!-- Заголовок колонки для імен файлів -->
-                <th scope="col">Дата і час створення</th>  <!-- Заголовок колонки для дати і часу створення файлів -->
-                <th scope="col">Дії</th>  <!-- Заголовок колонки для дій -->
+                <th scope="col">File Name</th>  <!-- Column header for file names -->
+                <th scope="col">Creation Date and Time</th>  <!-- Column header for creation date and time -->
+                <th scope="col">Actions</th>  <!-- Column header for actions -->
             </tr>
         </thead>
         <tbody>
-            {% for file in files %}  <!-- Цикл для проходження по всіх файлах -->
+            {% for file in files %}  <!-- Loop through all files -->
             <tr>
-                <td>{{ file.name }}</td>  <!-- Відображаємо ім'я файлу -->
-                <td>{{ file.creation_time }}</td>  <!-- Відображаємо дату і час створення файлу -->
+                <td>{{ file.name }}</td>  <!-- Display the file name -->
+                <td>{{ file.creation_time }}</td>  <!-- Display the file creation date and time -->
                 <td>
-                    <a href="{{ url_for('download_file', filename=file.name) }}" class="btn btn-primary">Скачати</a>  <!-- Посилання для завантаження файлу -->
+                    <a href="{{ url_for('download_file', filename=file.name) }}" class="btn btn-primary">Download</a>  <!-- Download file link -->
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <button class="btn btn-primary" onclick="history.back()">Назад</button>  <!-- Кнопка для повернення на попередню сторінку -->
+    <button class="btn btn-primary" onclick="history.back()">Go Back</button>  <!-- Button to return to the previous page -->
 </div>
 {% endblock %}
