@@ -1,25 +1,25 @@
-{% extends "bootstrap/base.html" %}  <!-- Розширюємо базовий шаблон Bootstrap -->
+{% extends "bootstrap/base.html" %}  <!-- Extending the base Bootstrap template -->
 
 {% block content %}
 <div class="container mt-5">
-    <h1 class="mb-4">Картки</h1>  <!-- Заголовок для сторінки з картками -->
-    {% for item in data %}  <!-- Цикл для проходження по всіх елементах у даних -->
+    <h1 class="mb-4">Cards</h1>  <!-- Page title for the card list -->
+    {% for item in data %}  <!-- Loop through all items in the data -->
     <div class="card mb-3">
         <div class="card-header">
-            ID запису у БД: {{ item.id }}  <!-- Відображаємо ID запису у базі даних -->
+            Record ID in DB: {{ item.id }}  <!-- Display the record ID from the database -->
         </div>
         <div class="card-body">
-            <h5 class="card-title"><i class="fas fa-user"></i> Ім'я: {{ item.name }}</h5>  <!-- Відображаємо ім'я з іконкою користувача -->
-            <p class="card-text"><strong>Призвище:</strong> {{ item.surname }}</p>  <!-- Відображаємо прізвище -->
-            <p class="card-text"><strong>По батькові:</strong> {{ item.patronym }}</p>  <!-- Відображаємо по батькові -->
-            <p class="card-text"><strong>Дата народження:</strong> {{ item.dateOfBirth }}</p>  <!-- Відображаємо дату народження -->
-            <p class="card-text"><strong>Стать:</strong> {{ item.gender }}</p>  <!-- Відображаємо стать -->
-            <p class="card-text"><strong>РНОКПП:</strong> {{ item.rnokpp }}</p>  <!-- Відображаємо РНОКПП -->
-            <p class="card-text"><strong>Номер паспорту:</strong> {{ item.passportNumber }}</p>  <!-- Відображаємо номер паспорту -->
-            <p class="card-text"><strong>УНЗР:</strong> {{ item.unzr }}</p>  <!-- Відображаємо УНЗР -->
+            <h5 class="card-title"><i class="fas fa-user"></i> Name: {{ item.name }}</h5>  <!-- Display the name with a user icon -->
+            <p class="card-text"><strong>Surname:</strong> {{ item.surname }}</p>  <!-- Display the surname -->
+            <p class="card-text"><strong>Patronymic:</strong> {{ item.patronym }}</p>  <!-- Display the patronymic -->
+            <p class="card-text"><strong>Date of Birth:</strong> {{ item.dateOfBirth }}</p>  <!-- Display the date of birth -->
+            <p class="card-text"><strong>Gender:</strong> {{ item.gender }}</p>  <!-- Display the gender -->
+            <p class="card-text"><strong>RNOKPP:</strong> {{ item.rnokpp }}</p>  <!-- Display the RNOKPP -->
+            <p class="card-text"><strong>Passport Number:</strong> {{ item.passportNumber }}</p>  <!-- Display the passport number -->
+            <p class="card-text"><strong>UNZR:</strong> {{ item.unzr }}</p>  <!-- Display the UNZR -->
         </div>
     </div>
     {% endfor %}
-    <button class="btn btn-primary" onclick="history.back()">Назад</button>  <!-- Кнопка для повернення на попередню сторінку -->
+    <button class="btn btn-primary" onclick="history.back()">Back</button>  <!-- Button to return to the previous page -->
 </div>
 {% endblock %}

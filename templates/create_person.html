@@ -1,55 +1,55 @@
 {% extends "bootstrap/base.html" %}
 
 {% block content %}
-{% include 'navbar.html' %}  <!-- Включаємо навігаційну панель -->
+{% include 'navbar.html' %}  <!-- Include the navigation bar -->
 
 <div class="container mt-5">
-    <div id="messageBox" style="display: none;"></div>  <!-- Поле для відображення повідомлень -->
+    <div id="messageBox" style="display: none;"></div>  <!-- Field for displaying messages -->
 
-    <h2>Створення нового запису</h2>
+    <h2>Create a New Record</h2>
     <form id="createForm" method="POST" action="/create">
         <div class="form-group">
-            <label for="name">Імʼя</label>
-            <input type="text" class="form-control" id="name" name="name" required>  <!-- Поле для введення імені -->
+            <label for="name">First Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>  <!-- Field for entering first name -->
         </div>
         <div class="form-group">
-            <label for="surname">Прізвище</label>
-            <input type="text" class="form-control" id="surname" name="surname" required>  <!-- Поле для введення прізвища -->
+            <label for="surname">Last Name</label>
+            <input type="text" class="form-control" id="surname" name="surname" required>  <!-- Field for entering last name -->
         </div>
         <div class="form-group">
-            <label for="patronymic">По батькові</label>
-            <input type="text" class="form-control" id="patronym" name="patronym" required>  <!-- Поле для введення по батькові -->
+            <label for="patronymic">Patronymic</label>
+            <input type="text" class="form-control" id="patronym" name="patronym" required>  <!-- Field for entering patronymic -->
         </div>
         <div class="form-group">
-            <label for="gender">Стать</label>
-            <select class="form-control" id="gender" name="gender" required>  <!-- Поле для вибору статі -->
-                <option value="male">Чоловіча</option>
-                <option value="female">Жіноча</option>
+            <label for="gender">Gender</label>
+            <select class="form-control" id="gender" name="gender" required>  <!-- Field for selecting gender -->
+                <option value="male">Male</option>
+                <option value="female">Female</option>
             </select>
         </div>
         <div class="form-group">
-            <label for="dateOfBirth">Дата народження</label>
-            <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" required>  <!-- Поле для введення дати народження -->
+            <label for="dateOfBirth">Date of Birth</label>
+            <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" required>  <!-- Field for entering date of birth -->
         </div>
         <div class="form-group">
-            <label for="passportNumber">Номер паспорту</label>
-            <input type="text" class="form-control" id="passportNumber" name="passportNumber" required>  <!-- Поле для введення номеру паспорту -->
+            <label for="passportNumber">Passport Number</label>
+            <input type="text" class="form-control" id="passportNumber" name="passportNumber" required>  <!-- Field for entering passport number -->
         </div>
         <div class="form-group">
-            <label for="unzr">УНЗР</label>
-            <input type="text" class="form-control" id="unzr" name="unzr" required>  <!-- Поле для введення УНЗР -->
+            <label for="unzr">UNZR</label>
+            <input type="text" class="form-control" id="unzr" name="unzr" required>  <!-- Field for entering UNZR -->
         </div>
         <div class="form-group">
-            <label for="rnokpp">РНОКПП</label>
-            <input type="text" class="form-control" id="rnokpp" name="rnokpp" required>  <!-- Поле для введення РНОКПП -->
+            <label for="rnokpp">RNOKPP</label>
+            <input type="text" class="form-control" id="rnokpp" name="rnokpp" required>  <!-- Field for entering RNOKPP -->
         </div>
-        <button type="submit" class="btn btn-primary">Створити запис</button>  <!-- Кнопка для відправки форми -->
+        <button type="submit" class="btn btn-primary">Create Record</button>  <!-- Submit button -->
     </form>
 </div>
 
 <script>
 document.getElementById('createForm').addEventListener('submit', function(event) {
-    event.preventDefault();  // Запобігаємо стандартному відправленню форми
+    event.preventDefault();  // Prevent the default form submission behavior
 
     const form = event.target;
     const formData = new FormData(form);
@@ -57,7 +57,7 @@ document.getElementById('createForm').addEventListener('submit', function(event)
     const formObject = {};
 
     formData.forEach((value, key) => {
-        formObject[key] = value;  // Збираємо дані форми у форматі об'єкта
+        formObject[key] = value;  // Convert form data to an object
     });
 
     fetch(form.action, {
@@ -65,25 +65,25 @@ document.getElementById('createForm').addEventListener('submit', function(event)
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formObject),  // Перетворюємо дані форми у JSON та надсилаємо на сервер
+        body: JSON.stringify(formObject),  // Convert form data to JSON and send to the server
     })
     .then(response => {
         if (response.status === 200) {
             response.json().then(data => {
-                messageBox.textContent = 'Запис успішно створено!';  // Відображаємо повідомлення про успіх
+                messageBox.textContent = 'Record created successfully!';  // Show success message
                 messageBox.className = 'alert alert-success';
                 messageBox.style.display = 'block';
             });
         } else if (response.status === 422) {
             response.json().then(data => {
-                messageBox.textContent = `Виникла помилка: ${JSON.stringify(data)}`;  // Відображаємо повідомлення про помилку
+                messageBox.textContent = `Error occurred: ${JSON.stringify(data)}`;  // Show error message
                 messageBox.className = 'alert alert-danger';
                 messageBox.style.display = 'block';
             });
         }
     })
     .catch(error => {
-        messageBox.textContent = `Виникла помилка: ${error.message}`;  // Відображаємо повідомлення про помилку у разі проблеми з запитом
+        messageBox.textContent = `Error occurred: ${error.message}`;  // Show error message if the request fails
         messageBox.className = 'alert alert-danger';
         messageBox.style.display = 'block';
     });

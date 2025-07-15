@@ -1,28 +1,29 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <!-- Логотип або назва сайту -->
-    <a class="navbar-brand" href="/">Реєстр</a>
-    <!-- Кнопка для перемикання навігаційної панелі на мобільних пристроях -->
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <!-- Logo or site name -->
+    <a class="navbar-brand" href="/">Registry</a>
+    <!-- Button for toggling the navigation panel on mobile devices -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
-    <!-- Основний блок навігаційної панелі, який буде показуватися або ховатися при натисканні на кнопку -->
+    <!-- Main navigation block that shows or hides when the button is clicked -->
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
-            <!-- Пункт меню для пошуку, який буде активним, якщо поточна сторінка є "index" -->
+            <!-- Menu item for search, active when current page is "index" -->
             <li class="nav-item {% if current_page == 'index' %}active{% endif %}">
-                <a class="nav-link" href="/">Пошук<span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="/">Search<span class="sr-only">(current)</span></a>
             </li>
-            <!-- Пункт меню для створення запису, який буде активним, якщо поточна сторінка є "create" -->
+            <!-- Menu item for creating a record, active when current page is "create" -->
             <li class="nav-item {% if current_page == 'create' %}active{% endif %}">
-                <a class="nav-link" href="/create">Створення запису</a>
+                <a class="nav-link" href="/create">Create Record</a>
             </li>
-            <!-- Пункт меню для сторінки ASIC контейнерів, який буде активним, якщо поточна сторінка є "files" -->
+            <!-- Menu item for ASIC containers page, active when current page is "files" -->
             <li class="nav-item {% if current_page == 'files' %}active{% endif %}">
-                <a class="nav-link" href="/files">Сторінка ASIC контейнерів</a>
+                <a class="nav-link" href="/files">ASIC Containers Page</a>
             </li>
-            <!-- Пункт меню для сторінки сертифікатів, який буде активним, якщо поточна сторінка є "certs" -->
+            <!-- Menu item for certificates page, active when current page is "certs" -->
             <li class="nav-item {% if current_page == 'certs' %}active{% endif %}">
-                <a class="nav-link" href="/certs">Сертифікати</a>
+                <a class="nav-link" href="/certs">Certificates</a>
             </li>
         </ul>
     </div>
