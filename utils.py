@@ -328,6 +328,57 @@ def get_uxp_headers_from_config(config_instance) -> dict:
     logger.debug(f"Заголовки UXP сформовано: {headers}")
     return headers
 
+def get_xroad_headers_from_config(config_instance) -> dict:
+    # Формування заголовків UXP для запитів
+    logger.debug("Формування заголовків UXP")
+    xroad_client_header_name = "X-Road-Client"
+    xroad_query_id_header_name = "X-Road-Id"
+    xroad_query_user_id_header_name = "X-Road-UserId"
+    xroad_query_issue_header_name = "X-Road-Issue"
+    ##uxp_service_header_name = "UXP-Service"
+    ##uxp_sevice_purpose_id = "Uxp-Purpose-Ids"
+
+    xroad_client_header_value = (
+        f"{config_instance.client_instance}/"
+        f"{config_instance.client_org_type}/"
+        f"{config_instance.client_org_code}/"
+        f"{config_instance.client_org_sub}"
+    )
+
+    xroad_query_id_header_value = f"{config_instance.client_instance}-"+str(uuid.uuid4())
+
+    xroad_query_user_id_header_value = "Flask_client"  # Any value can be set. During message exchange
+    # this user id will be stored by security server within message log
+
+    # xroad_query_issue_header_value = "example0"  # Identifies received application, issue or document that
+    # was the cause of the service request. This field may be used by the client information system
+    # to connect service requests (and responses) to working procedures.
+
+    #base_service_value = (
+    #    f"{config_instance.service_instance}/"
+    #    f"{config_instance.service_org_type}/"
+    #    f"{config_instance.service_org_code}/"
+    #    f"{config_instance.service_org_sub}/"
+    #    f"{config_instance.service_org_name}"
+    #)
+
+    #if config_instance.service_org_version:
+    #    uxp_service_header_value = f"{base_service_value}/{config_instance.service_org_version}"
+    #else:
+    #    uxp_service_header_value = base_service_value
+
+    #purpose_id_value = config_instance.trembita_purpose
+
+    headers = {
+        xroad_client_header_name: xroad_client_header_value,
+        xroad_query_id_header_name: xroad_query_id_header_value,
+        xroad_query_user_id_header_name: xroad_query_user_id_header_value,
+        # xroad_query_issue_header_name: xroad_query_issue_header_value,
+        #uxp_service_header_name: uxp_service_header_value,
+        #uxp_sevice_purpose_id: purpose_id_value
+    }
+    logger.debug(f"Заголовки UXP сформовано: {headers}")
+    return headers
 
 def get_uxp_query_params() -> dict:
     # Генерація унікальних параметрів запиту для UXP
@@ -359,11 +410,29 @@ def get_base_trembita_uri(config_instance) -> str:
     return uri
 
 
+def get_base_xroad_uri(config_instance) -> str:
+    # Формування базового URI для доступу до сервісу Трембіта
+    logger.debug("Формування базового URL ШБО Трембіти клієнта")
+    if config_instance.trembita_protocol == "https":
+        uri = f"https://{config_instance.trembita_host}:8443"
+    else:
+        uri = f"http://{config_instance.trembita_host}:8080"
+    logger.debug(f"Базовий URI Trembita: {uri}")
+    return uri
+
+def get_rest_xroad_uri(config_instance) -> str:
+    # Composing the URI for REST API call via security server using base URI
+    logger.debug("Формування базового URL ШБО Трембіти клієнта")
+    uri = get_base_xroad_uri(config_instance) + f"/r1/{config_instance.service_instance}/{config_instance.service_org_type}/{config_instance.service_org_code}/{config_instance.service_org_sub}/{config_instance.service_org_name}"
+    logger.debug(f"Базовий URI Trembita: {uri}")
+    return uri
+
+
 def get_person_from_service(parameter: str, value: str, config_instance) -> list:
     # Отримання інформації про особу за параметром через сервіс Трембіта
-    base_uri = get_base_trembita_uri(config_instance)
-    headers = get_uxp_headers_from_config(config_instance)
-    query_params = get_uxp_query_params()
+    base_uri = get_rest_xroad_uri(config_instance)+f"/person"
+    headers = get_xroad_headers_from_config(config_instance)
+    query_params = None # get_uxp_query_params()
 
     url = f"{base_uri}/{parameter}/{value}"
     encoded_url = quote(url, safe=':/')
@@ -398,9 +467,9 @@ def get_person_from_service(parameter: str, value: str, config_instance) -> list
 
 def edit_person_in_service(data: dict, config_instance) -> CustomResponse:
     # Редагування інформації про особу через сервіс Трембіта
-    base_url = get_base_trembita_uri(config_instance)
-    headers = get_uxp_headers_from_config(config_instance)
-    query_params = get_uxp_query_params()
+    base_url = get_rest_xroad_uri(config_instance)+f"/person"
+    headers = get_xroad_headers_from_config(config_instance)
+    query_params = None #get_uxp_query_params()
     url = base_url
 
     logger.debug(f"Редагування інформації про особу: {data}")
@@ -432,9 +501,9 @@ def edit_person_in_service(data: dict, config_instance) -> CustomResponse:
 
 def service_delete_person(data: dict, config_instance) -> CustomResponse:
     # Видалення інформації про особу через сервіс Трембіта
-    base_url = get_base_trembita_uri(config_instance)
-    headers = get_uxp_headers_from_config(config_instance)
-    query_params = get_uxp_query_params()
+    base_url = get_rest_xroad_uri(config_instance)+f"/person"
+    headers = get_xroad_headers_from_config(config_instance)
+    query_params = None #get_uxp_query_params()
 
     url = f"{base_url}/unzr/{data['unzr']}"
 
@@ -463,9 +532,9 @@ def service_delete_person(data: dict, config_instance) -> CustomResponse:
 
 def service_add_person(data: dict, config_instance) -> CustomResponse:
     # Додавання нової особи через сервіс Трембіта
-    base_url = get_base_trembita_uri(config_instance)
-    headers = get_uxp_headers_from_config(config_instance)
-    query_params = get_uxp_query_params()
+    base_url = get_rest_xroad_uri(config_instance)+f"/person"
+    headers = get_xroad_headers_from_config(config_instance)
+    query_params = None #get_uxp_query_params()
 
     url = base_url
     logger.info(f"Додавання нової особи: {data}")

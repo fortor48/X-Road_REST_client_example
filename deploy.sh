@@ -5,8 +5,8 @@ sudo apt update
 sudo apt install -y git python3 python3-pip python3-venv
 
 # Клонування репозиторію
-git clone https://github.com/kshypachov/web-client_trembita_sync.git
-cd web-client_trembita_sync
+git clone https://github.com/fortor48/X-Road_REST_client_example.git
+cd X-Road_REST_client_example
 
 # Створення та активація віртуального оточення
 python3 -m venv venv
@@ -16,7 +16,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Створення Unit файлу системної служби для systemd
-SERVICE_FILE=/etc/systemd/system/fastapi_trembita_client.service
+SERVICE_FILE=/etc/systemd/system/x-road_rest_client_example.service
 
 sudo bash -c "cat > $SERVICE_FILE" <<EOL
 [Unit]
@@ -38,5 +38,5 @@ EOL
 sudo systemctl daemon-reload
 
 # Увімкнення та запуск вебклієнту
-sudo systemctl enable fastapi_trembita_client
-#sudo systemctl start fastapi_trembita_client
+sudo systemctl enable x-road_rest_client_example
+#sudo systemctl start x-road_rest_client_example
