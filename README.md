@@ -182,4 +182,4 @@ This project is licensed under the MIT License.
 
 ##
 
-This material was developed with the support of the international technical assistance project "EU Support to the Digital Transformation of Ukraine (DT4UA)".
+Materials created with support from the EU Technical Assistance Project "Bangladesh e-governance (BGD)".

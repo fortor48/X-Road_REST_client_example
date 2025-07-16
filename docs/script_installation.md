@@ -1,42 +1,41 @@
-## Встановлення за допомогою скрипта deploy.sh
+## Installation via the `x-road_rest_client_example_deploy.sh` Script
 
-Для автоматизації процесу встановлення та подальшої роботи вебклієнт було створено скрипт `deploy.sh`.
+To automate the installation process and further operation of the web client, a script named `x-road_rest_client_example_deploy.sh` was created.
 
-**Даний скрипт:**
+**This script:**
 
-1. Встановлює системні залежності програмного забезпечення вебклієнта.
-2. Клонує репозиторій.
-3. Створює та активує віртуальне середовище.
-4. Встановлює залежності Python.
-5. Створює файл системної служби  типу systemd для запуску вебклієнта.
+1. Installs the system software dependencies required for the web client.
+2. Clones the repository.
+3. Creates and activates a virtual environment.
+4. Installs Python dependencies.
+5. Creates a systemd service file to launch the web client.
 
-**Для того, щоб встановити даний вебклієнт за допомогою скрипта необхідно:**
+**To install the web client using the script, follow these steps:**
 
-1. Завантажити скрипт:
+1. Download the script:
 ```bash
-wget https://raw.githubusercontent.com/kshypachov/web-client_trembita_sync/refs/heads/master/deploy.sh
+wget https://raw.githubusercontent.com/fortor48/X-Road_REST_client_example/refs/heads/master/x-road_rest_client_example_deploy.sh
 ```
 
-2. Зробити файл виконуваним:
-
+2. Make the file executable:
 ```bash
-chmod +x deploy.sh
+chmod +x x-road_rest_client_example_deploy.sh
 ```
 
-3. Запустити скрипт:
+3. Run the script:
 ```bash
-./deploy.sh
+./x-road_rest_client_example_deploy.sh
 ```
 
-4. Перейти до директорії з клієнтом:
-
+4. Navigate to the client directory:
 ```bash
-cd web-client_trembita_sync
+cd X-Road_REST_client_example
 ```
 
-5. Виконати конфігурацію вебклієнту згідно [настанов з конфігурації](./configuration.md)
+5. Configure the web client according to the [configuration guide](./configuration.md).
 
-Адмініструваняя вебклієнту здійснюється згідно [настанов з адміністрування вебсервісу](/README.md#Адміністрування-клієнту).
+Administration of the web client is carried out according to the [web service administration guide](/README.md#client-administration).
 
 ##
-Матеріали створено за підтримки проєкту міжнародної технічної допомоги «Підтримка ЄС цифрової трансформації України (DT4UA)».
+
+Materials created with support from the EU Technical Assistance Project "Bangladesh e-governance (BGD)".
