@@ -6,179 +6,172 @@ import utils
 import os
 import logging
 
-# Зчитування параметрів додатку з конфігураційного файлу
+# Reading application parameters from config file
 conf = utils.Config('config.ini')
 
-# Налаштування логування
+# Logging setup
 try:
     utils.configure_logging(conf)
     logger = logging.getLogger(__name__)
-    logger.info("Логування налаштовано успішно.")
+    logger.info("Logging configured successfully.")
 except Exception as e:
-    # Якщо виникає помилка при налаштуванні логування, додаток припиняє роботу
-    print(f"Помилка налаштування логування: {e}")
+    # If an error occurs during logging setup, terminate the application
+    print(f"Logging configuration error: {e}")
     sys.exit(1)
 
-logger.debug("Початок ініціалізації додатку")
+logger.debug("Starting application initialization")
 
-# Ініціалізація директорій для сертифікатів та ASIC файлів
+# Initialize directories for certificate files
 crt_directory = conf.cert_path
 asic_directory = conf.asic_path
 key = conf.key_file
 cert = conf.cert_file
 
-# Створення директорій для сертифікатів і ASIC, якщо їх не існує
+# Create certificate and ASIC directories if they don't exist
 utils.create_dir_if_not_exist(crt_directory)
 utils.create_dir_if_not_exist(asic_directory)
 
-# Шляхи до ключів і сертифікатів
+# Paths to keys and certificates
 private_key_full_path = os.path.join(crt_directory, key)
 certificate_full_path = os.path.join(crt_directory, cert)
 
-# Якщо ключ або сертифікат не знайдені, генеруємо їх
+# If key or certificate not found, generate them
 if not os.path.exists(private_key_full_path) or not os.path.exists(certificate_full_path):
-    logger.info(f"Не знайдено ключ: {key} або сертифікат {cert} у директорії {crt_directory}")
+    logger.info(f"Key: {key} or certificate {cert} not found in directory {crt_directory}")
     utils.generate_key_cert(key, cert, crt_directory)
 
-
-# Ініціалізація додатку Flask
+# Initialize Flask application
 app = Flask(__name__)
 Bootstrap(app)
-logger.info("Додаток Flask ініціалізовано.")
+logger.info("Flask application initialized.")
 
-
-# Обробка HTTP запитів на головну сторінку
+# Handle HTTP requests to the home page
 @app.route('/', methods=['GET', 'POST'])
 def search_user():
-    logger.debug(f"Отримано {'POST' if request.method == 'POST' else 'GET'} запит на маршрут '/'.")
-    if request.method == 'POST':  # Якщо прийшов POST-запит, обробляємо форму пошуку користувача
+    logger.debug(f"Received {'POST' if request.method == 'POST' else 'GET'} request to '/' route.")
+    if request.method == 'POST':  # Handle POST request for person search form
         search_field = request.form.get('search_field')
         search_value = request.form.get('search_value')
 
-        logger.debug(f"Отримано параметри пошуку: {search_field} : {search_value} ")
+        logger.debug(f"Received search parameters: {search_field} : {search_value}")
 
         try:
-            # Запит на отримання інформації про користувача
+            # Query for person information
             data = utils.get_person_from_service(search_field, search_value, conf)
         except Exception as e:
-            # У разі помилки відправляємо повідомлення про помилку на сторінку
-            logger.error(f"Виникла помилка: {str(e)}")
-            return render_template('error.html', error_message=e,  current_page='index')
-        return render_template('list_person.html', data=data,  current_page='index')
+            # In case of error, render error page
+            logger.error(f"Error occurred: {str(e)}")
+            return render_template('error.html', error_message=e, current_page='index')
+        return render_template('list_person.html', data=data, current_page='index')
 
-    # Якщо запит GET, просто віддаємо вебсторінку з формою пошуку
-    return render_template('search_form.html',  current_page='index') # Прийшов GET запит, просто віддаємо вебсторінку
+    # If GET request, render the search form
+    return render_template('search_form.html', current_page='index')
 
-
-# Обробка створення нового користувача
+# Handle person creation
 @app.route('/create', methods=['GET', 'POST'])
 def create_user():
-    logger.debug(f"Отримано {'POST' if request.method == 'POST' else 'GET'} запит на маршрут '/create'.")
-    if request.method == 'POST': # Якщо прийшов POST-запит, обробляємо створення нового користувача
+    logger.debug(f"Received {'POST' if request.method == 'POST' else 'GET'} request to '/create' route.")
+    if request.method == 'POST':  # Handle POST request to create a new person
         try:
-            form_data = request.get_json() # Зчитуємо дані з форми
-            logger.debug(f"Отримано запит на створення з параметрами: {form_data}")
-            # Викликаємо функцію для додавання нового користувача
+            form_data = request.get_json()  # Read form data
+            logger.debug(f"Received creation request with parameters: {form_data}")
+            # Call function to add new person
             response = utils.service_add_person(form_data, conf)
             resp = jsonify(message=response.body), response.status_code
             return resp
         except Exception as e:
-            logger.debug(f"Виникла помилка: {str(e)}")
-            resp = jsonify(message=f'Помилка при створенні об’єкта користувача: {str(e)}'), 422
+            logger.debug(f"Error occurred: {str(e)}")
+            resp = jsonify(message=f'Error creating person object: {str(e)}'), 422
             return resp
 
-    # Якщо запит GET, просто віддаємо вебсторінку з формою для створення користувача
-    return render_template('create_person.html',  current_page='create') # Прийшов GET запит, просто віддаємо вебсторінку
+    # If GET request, render person creation form
+    return render_template('create_person.html', current_page='create')
 
-
-# Обробка редагування даних користувача
+# Handle person data editing
 @app.route('/edit', methods = ['POST'])
 def edit_user():
-    logger.debug("Отримано POST запит на маршрут '/edit'.")
-    data = request.get_json() # Отримуємо дані для редагування
-    logger.debug(f"Отримано дані для редагування: {data}")
+    logger.debug("Received POST request to '/edit' route.")
+    data = request.get_json()  # Get edit data
+    logger.debug(f"Received edit data: {data}")
     try:
-        # Викликаємо функцію для редагування даних користувача
+        # Call function to edit person data
         http_resp = utils.edit_person_in_service(data, conf)
     except Exception as e:
-        logger.error(f"Виникла помилка: {str(e)}")
-        resp = jsonify(message=f"Виникла помилка при обробці запиту на редагування: error: {str(e)}"), 500
+        logger.error(f"Error occurred: {str(e)}")
+        resp = jsonify(message=f"Error processing edit request: {str(e)}"), 500
         return resp
     return jsonify(message=http_resp.body), http_resp.status_code
 
-
-# Обробка видалення користувача
+# Handle person deletion
 @app.route('/delete', methods = ['POST'])
 def delete_person():
-    logger.debug("Отримано POST запит на маршрут '/delete'.")
-    data = request.get_json()   # Отримуємо дані про користувача для видалення
-    logger.debug(f"Отримано запит на видалення: {data}")
+    logger.debug("Received POST request to '/delete' route.")
+    data = request.get_json()   # Get person data to delete
+    logger.debug(f"Received deletion request: {data}")
     try:
-        # Викликаємо функцію для видалення користувача
+        # Call function to delete person
         http_resp = utils.service_delete_person(data, conf)
     except Exception as e:
-        logger.error(f"Виникла помилка: {str(e)}")
-        resp = jsonify(message=f"Виникла помилка при обробці запиту на видалення: error: {str(e)}"), 500
+        logger.error(f"Error occurred: {str(e)}")
+        resp = jsonify(message=f"Error processing deletion request: {str(e)}"), 500
         return resp
     return jsonify(message= http_resp.body), http_resp.status_code
 
-# Обробка відображення списку файлів
-@app.route('/files')
-def list_files():
-    logger.debug("Отримано GET запит на маршрут '/files'.")
-    try:
-        # Отримуємо список файлів у ASIC директорії
-        files = []
-        for filename in os.listdir(asic_directory):
-            filepath = os.path.join(asic_directory, filename)
-            if os.path.isfile(filepath):
-                creation_time = datetime.fromtimestamp(os.path.getctime(filepath))
-                files.append({
-                    'name': filename,
-                    'creation_time': creation_time.strftime('%Y-%m-%d %H:%M:%S')
-                })
+# Handle file list display
+# @app.route('/files')
+# def list_files():
+#     logger.debug("Received GET request to '/files' route.")
+#     try:
+#         # Get list of files in ASIC directory
+#         files = []
+#         for filename in os.listdir(asic_directory):
+#             filepath = os.path.join(asic_directory, filename)
+#             if os.path.isfile(filepath):
+#                 creation_time = datetime.fromtimestamp(os.path.getctime(filepath))
+#                 files.append({
+#                     'name': filename,
+#                     'creation_time': creation_time.strftime('%Y-%m-%d %H:%M:%S')
+#                 })
+#
+#         # Sort files by creation date in descending order
+#         files = sorted(files, key=lambda x: x['creation_time'], reverse=True)
+#         logger.debug("File list retrieved successfully.")
+#
+#         return render_template('list_files.html', files=files, current_page='files')
+#     except Exception as e:
+#         logger.error(f"Error occurred: {str(e)}")
+#         return render_template('error.html', error_message=e, current_page='files')
+#
+# # File download
+# @app.route('/download/<filename>')
+# def download_file(filename):
+#     logger.debug(f"Received GET request to '/download/{filename}' route.")
+#     ASIC_DIR = os.path.join(os.getcwd(), asic_directory)
+#     safe_filename = os.path.basename(filename)  # File name validation for security
+#     try:
+#         return send_from_directory(ASIC_DIR, safe_filename, as_attachment=True)  # Send file
+#     except Exception as e:
+#         logger.error(f"Error occurred: {str(e)}")
+#         return render_template('error.html', error_message=e, current_page='files')
 
-        # Сортуємо файли за датою створення в порядку спадання
-        files = sorted(files, key=lambda x: x['creation_time'], reverse=True)
-        logger.debug("Список файлів отримано успішно.")
-
-        return render_template('list_files.html', files=files, current_page='files')
-    except Exception as e:
-        logger.error(f"Виникла помилка: {str(e)}")
-        return render_template('error.html', error_message=e, current_page='files')
-
-
-# Завантаження файлу
-@app.route('/download/<filename>')
-def download_file(filename):
-    logger.debug(f"Отримано GET запит на маршрут '/download/{filename}'.")
-    ASIC_DIR = os.path.join(os.getcwd(), asic_directory)
-    safe_filename = os.path.basename(filename) # Валідація імені файлу для безпеки
-    try:
-        return send_from_directory(ASIC_DIR, safe_filename, as_attachment=True)  # Відправка файлу
-    except Exception as e:
-        logger.error(f"Виникла помилка: {str(e)}")
-        return render_template('error.html', error_message=e, current_page='files')
-
-
-# Завантаження сертифікату
+# Certificate download
 @app.route('/download_cert/<filename>')
 def download_cert(filename):
-    logger.debug(f"Отримано GET запит на маршрут '/download_cert/{filename}'.")
+    logger.debug(f"Received GET request to '/download_cert/{filename}' route.")
     CERT_DIR = os.path.join(os.getcwd(), crt_directory)
-    safe_filename = os.path.basename(filename)  # Валідація імені файлу для безпеки
+    safe_filename = os.path.basename(filename)  # File name validation for security
     try:
-        return send_from_directory(CERT_DIR, safe_filename, as_attachment=True) # Відправка сертифікату
+        return send_from_directory(CERT_DIR, safe_filename, as_attachment=True)  # Send certificate
     except Exception as e:
-        logger.error(f"Виникла помилка: {str(e)}")
+        logger.error(f"Error occurred: {str(e)}")
         return render_template('error.html', error_message=e, current_page='certs')
 
-# Обробка відображення списку сертифікатів
+# Handle certificate list display
 @app.route('/certs')
 def list_certs():
-    logger.debug("Отримано GET запит на маршрут '/certs'.")
+    logger.debug("Received GET request to '/certs' route.")
     try:
-        # Отримуємо список сертифікатів у директорії
+        # Get list of certificates in directory
         files = []
         for filename in os.listdir(crt_directory):
             filepath = os.path.join(crt_directory, filename)
@@ -189,18 +182,18 @@ def list_certs():
                     'creation_time': creation_time.strftime('%Y-%m-%d %H:%M:%S')
                 })
 
-        # Сортуємо сертифікати за датою створення в порядку спадання
+        # Sort certificates by creation date in descending order
         files = sorted(files, key=lambda x: x['creation_time'], reverse=True)
-        logger.debug("Список сертифікатів отримано успішно.")
+        logger.debug("Certificate list retrieved successfully.")
 
         return render_template('list_certs.html', files=files, current_page='certs')
     except Exception as e:
-        logger.error(f"Виникла помилка: {str(e)}")
+        logger.error(f"Error occurred: {str(e)}")
         return render_template('error.html', error_message=e, current_page='certs')
 
-# Запуск додатку
+# Application entry point
 if __name__ == '__main__':
-    # Запуск додатку Flask з режимом налагодження (debug)
-    logger.info("Запуск додатку Flask.")
+    # Run Flask application in debug mode
+    logger.info("Launching Flask application.")
     app.run(debug=True)
-    logger.info("Додаток Flask зупинено.")
+    logger.info("Flask application stopped.")
