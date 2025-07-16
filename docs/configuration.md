@@ -1,103 +1,104 @@
-## Конфігурація вебклієнту
+## Web Client Configuration
 
-Для конфігурації вебклієнту необхідно:
-1.	Створити файл конфігурації `config.ini` в кореневій директорії з вебклієнтом з наступним вмістом:
+To configure the web client:
+1. Create a configuration file named `config.ini` in the root directory of the web client, with the following content:
 
 ```ini
 [trembita]
 
-# Протокол, який використовується для взаємодії з ШБО (https або http)
-# Протокол https вимагає взаємної автентифікації клієнта з ШБО з використанням сертифікатів
+# Protocol used for interaction with the X-Road system (https or http)
+# HTTPS requires mutual authentication with certificates between the client and X-Road security server
 protocol = https
 
-# Хостнейм, FQDN або локальна IP-адреса ШБО
-# можливі варіанти: 192.168.1.1, trembita.example.gov.ua
-host = your_trembita_host
+# Hostname, FQDN, or local IP address of X-Road security server
+# Possible values: 192.168.1.1, bndx-ss.example.gov.ua
+host = your_securityserver_host
 
-# Ідентифікатор мети обробки персональних даних для взаємодії з сервісами, що використовують Підсистему моніторингу доступу до персональних даних системи Трембіта (ПМДПД). Може бути не заданим (закоментувати параметр), якщо обмін відбувається без використання цього ПМДПД.
-purpose_id = your_purpose_id
+# Purpose ID for processing personal data when interacting with services using Trembita Personal Data Access Monitoring Subsystem.
+# May be omitted or commented out if this subsystem is not used.
+# purpose_id = your_purpose_id
 
-# Шлях до ssl ключів та сертифікатів для взаємодії з ШБО (директорія буде створена, якщо вона не існує)
+# Path to SSL keys and certificates for interaction with X-Road security server (directory will be created if it doesn't exist)
 cert_path = path/to/your/certificates
 
-# Шлях для збереження ASiC файлів з завантаженими повідомленнями (директорія буде створена, якщо вона не існує)
+# Path to save ASiC files containing downloaded messages (directory will be created if it doesn't exist)
 asic_path = path/to/save/asic/files
 
- # Ім'я файлу сертифіката який буде згенеровано якщо не буде знайдено файл у cert_path
+# Filename for the certificate to be generated if not found in cert_path
 cert_file = cert_name.pem
 
- # Ім'я файлу ключа який буде згенеровано якщо не буде знайдено файл у cert_path
+# Filename for the key to be generated if not found in cert_path
 key_file = key.pem
 
- # Ім'я файлу сертификата Трембіти, котрий необхідний для роботи з системой Трембіта за протоколом https з взаемною аутентифікацією, має знаходитись у  cert_path
-trembita_cert_file = trembita.pem  
+# Filename of the X-Road security server's certificate required for HTTPS with mutual authentication. Must be placed in cert_path
+trembita_cert_file = securityserver.pem  
 
-# Повний ідентифікатор клієнтської підсистеми Трембіти, що використовується для надсилання повідомлень-запитів
+# Full identifier of the X-Road client subsystem used for sending request messages
 [client]
-# xRoadInstance (SEVDEIR чи SEVDEIR-TEST)
-instance = SEVDEIR-TEST
+# xRoadInstance (e.g., BD or BD-POC)
+instance = BD-POC
 
-# memberClass (GOV) 
+# memberClass (e.g., GOV)
 memberClass = GOV
 
-# memberCode - код ЄДРПОУ організації-клієнта
+# memberCode – Identifying code of the client organization
 memberCode = your_client_member_code
 
-# subsystemCode - код підсистеми ШБО організації-клієнта, що буде використовуватись для запитів
+# subsystemCode – X-Road subsystem code of the client organization used for requests
 subsystemCode = your_client_subsystem_code
 
-# Повний ідентифікатор сервісу Трембіти, на який надсилаються повідомлення-запити
+# Full identifier of the X-Road service to which request messages are sent
 [service]
-# xRoadInstance (SEVDEIR чи SEVDEIR-TEST)
-instance = SEVDEIR-TEST
+# xRoadInstance (e.g., BD or BD-POC)
+instance = BD-POC
 
-# memberClass (GOV) 
+# memberClass (e.g., GOV)
 memberClass = GOV
 
-# memberCode - код ЄДРПОУ організації-постачальника
+# memberCode – Identifying code of the provider organization
 memberCode = your_service_member_code
- 
-# subsystemCode - код підсистеми ШБО організації-постачальника, на якій опубліковано сервіс
+
+# subsystemCode – X-Road subsystem code of the provider organization where the service is published
 subsystemCode = your_service_subsystem_code
 
-# serviceCode - код сервісу, що опублікований на ШБО організації-постачальника
+# serviceCode – code of the service published in the X-Road system
 serviceCode = your_service_code
 
-# serviceVersion - версія сервісу, якщо є (зазвичай сервіс не має версії). Якщо сервіс не має версії - не задавати значення
+# serviceVersion – version of the service, if available (usually omitted if the service has no version)
 serviceVersion = your_service_version
 
 [logging]
-# Шлях до файлу логування
-filename = path/to/fastapi_trembita_client.log
+# Path to the log file
+filename = path/to/x-road_rest_client_example.log
 
-# filemode визначає режим, в якому буде відкритий файл логування.
-# 'a' - дописувати до існуючого файлу
-# 'w' - перезаписувати файл кожен раз при старті програми
+# filemode defines how the log file is opened:
+# 'a' – append to existing file
+# 'w' – overwrite the file each time the program starts
 filemode = a
 
-# format визначає формат повідомлень логування.
-# %(asctime)s - час створення запису
-# %(name)s - ім'я логгера
-# %(levelname)s - рівень логування
-# %(message)s - текст повідомлення
-# %(pathname)s - шлях до файлу, звідки було зроблено виклик
-# %(lineno)d - номер рядка у файлі, звідки було зроблено виклик
+# format defines the format of log messages:
+# %(asctime)s – timestamp of the log entry
+# %(name)s – logger name
+# %(levelname)s – logging level
+# %(message)s – log message text
+# %(pathname)s – file path from where the log was triggered
+# %(lineno)d – line number in the file where the log was triggered
 format = %(asctime)s - %(name)s - %(levelname)s - %(message)s
 
-# dateformat визначає формат дати в повідомленнях логування.
-# Можливі формати можуть бути такими, як:
-# %Y-%m-%d %H:%M:%S - 2023-06-25 14:45:00
-# %d-%m-%Y %H:%M:%S - 25-06-2023 14:45:00
+# dateformat defines the date format in log messages.
+# Examples:
+# %Y-%m-%d %H:%M:%S – 2023-06-25 14:45:00
+# %d-%m-%Y %H:%M:%S – 25-06-2023 14:45:00
 dateformat = %Y-%m-%d %H:%M:%S
 
-# level визначає рівень логування. Найбільш детальний це DEBUG, за замовчуванням INFO
-# DEBUG - докладна інформація, корисна для відлагодження роботи, логується вміст запитів та відповідей
-# INFO - загальна інформація про стан виконання програми
-# WARNING - попередження про можливі проблеми
-# ERROR - помилки, які завадили нормальному виконанню
-# CRITICAL - критичні помилки, що призводять до завершення програми
+# level sets the logging verbosity. The most detailed is DEBUG; default is INFO
+# DEBUG – detailed logs useful for debugging (includes request/response contents)
+# INFO – general execution status information
+# WARNING – potential issue warnings
+# ERROR – errors that prevent normal operation
+# CRITICAL – critical errors that cause application shutdown
 level = DEBUG
 ```
 
 ##
-Матеріали створено за підтримки проєкту міжнародної технічної допомоги «Підтримка ЄС цифрової трансформації України (DT4UA)».
+This guide was created with support from the international technical assistance project “Bangladesh e-governance (BGD)”.
