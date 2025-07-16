@@ -1,88 +1,61 @@
-# Розгортання вебклієнта в Docker
+# Deploying the Web Client in Docker
 
-## Вимоги
+## Requirements
 
-| ПЗ             |   Версія   | Примітка                     |
-|:---------------|:----------:|------------------------------|
-| Docker         | **20.10+** |                              |
-| Docker Compose |   10.5+    | Якщо планується використання |
-| Git            |            | Для клонування репозиторію   |
+| Software        | Version    | Note                             |
+|:----------------|:----------:|----------------------------------|
+| Docker          | **20.10+** |                                  |
+| Docker Compose  |   10.5+    | If you plan to use it            |
+| Git             |            | For cloning the repository       |
 
-## Змінні оточення
+## Environment Variables
 
-Вебклієнт підтримує конфігурацію через змінні оточення. 
-Нижче наведено основні параметри:
-- `USE_ENV_CONFIG` – Керує використанням змінних оточення для конфігурації. Якщо встановлено значення `true`, всі параметри будуть братися із змінних оточення, а не з файлу `config.ini`.
-- `TREMBITA_PROTOCOL` – Протокол, який використовується для взаємодії з системою Трембіта. Можливі варіанти: http або https. Наприклад, http використовується для простого підключення, а https – для захищеного підключення з автентифікацією.
-- `TREMBITA_PURPOSE_ID` – Ідентифікатор мети обробки персональних даних. Цей параметр використовується для інтеграції з Підсистемою моніторингу доступу до персональних даних (ПМДПД).
-- `TREMBITA_HOST` – Хост або IP-адреса сервера Трембіта, до якого підключається клієнт. Це може бути FQDN або локальна IP-адреса, наприклад 10.0.20.235.
-- `CLIENT_INSTANCE` – Ідентифікатор клієнтської підсистеми в системі Трембіта. Наприклад, SEVDEIR-TEST може бути тестовим інстансом для клієнта.
-- `CLIENT_MEMBERCLASS` – Клас учасника системи Трембіта, наприклад GOV, який зазвичай використовується для урядових організацій.
-- `CLIENT_MEMBERCODE` – Унікальний код клієнта в системі Трембіта. Наприклад, 10000004 – це код ЄДРПОУ організації-клієнта.
-- `CLIENT_SUBSYSTEMCODE` – Код підсистеми організації-клієнта в системі Трембіта. Використовується для визначення конкретної підсистеми, яка буде обробляти запити. Наприклад, SUB_CLIENT.
-- `SERVICE_INSTANCE` – Ідентифікатор інстансу сервісу в системі Трембіта, наприклад, SEVDEIR-TEST. Це ідентифікатор сервісу, на який надсилаються запити.
-- `SERVICE_MEMBERCLASS` – Клас учасника для сервісу, зазвичай такий самий, як і для клієнта (GOV).
-- `SERVICE_MEMBERCODE` – Унікальний код організації-постачальника сервісу, наприклад 10000004, код ЄДРПОУ організації, яка надає сервіс.
-- `SERVICE_SERVICECODE` – Код сервісу в системі Трембіта. Наприклад, py_sync – це код конкретного сервісу, який опублікований організацією-постачальником.
-- `SERVICE_SUBSYSTEMCODE` – Код підсистеми організації-постачальника сервісу в системі Трембіта. Наприклад, SUB_SERVICE.
-- `SERVICE_SERVICEVERSION` - Версія сервісу організації-постачальника сервісу в системі Трембіта.
-- `LOGGING_LEVEL` – Рівень деталізації повідомлень у логах. Можливі значення: DEBUG (найдетальніший), INFO, WARNING, ERROR, CRITICAL. Значення DEBUG виводить максимальну кількість інформації для налагодження програми.
-- `LOGGING_FILENAME` - Ім'я файлу для логування. Якщо значення параметра порожнє, логи будуть виводитися в консоль (stdout).
+The web client supports configuration via environment variables.  
+Below are the main parameters:
+- `USE_ENV_CONFIG` – Controls whether environment variables are used for configuration. If set to `true`, all parameters will be taken from environment variables instead of the `config.ini` file.
+- `TREMBITA_PROTOCOL` – Protocol used to communicate with the X-Road system. Options: http or https. For example, http is for basic connectivity, and https for secure connectivity with authentication.
+- `TREMBITA_PURPOSE_ID` – Purpose ID for processing personal data. This parameter is used for integration with the Personal Data Access Monitoring Subsystem (PDMDS) of the Trembita system.
+- `TREMBITA_HOST` – Host or IP address of the X-Road security server that the client connects to. Can be an FQDN or local IP, e.g., 10.0.20.235.
+- `CLIENT_INSTANCE` – Identifier of the client subsystem in the Trembita system. For example, SEVDEIR-TEST might be a test instance.
+- `CLIENT_MEMBERCLASS` – Member class in X-Road, e.g., GOV typically used for government organizations.
+- `CLIENT_MEMBERCODE` – Unique client code in X-Road. For example, 10000004 is the Organization identifier code of the client organization.
+- `CLIENT_SUBSYSTEMCODE` – Subsystem code of the client organization in X-Road. Used to define the specific subsystem that will handle requests. For example, SUB_CLIENT.
+- `SERVICE_INSTANCE` – Identifier of the service instance in X-Road, e.g., BD-POC, to which requests are sent.
+- `SERVICE_MEMBERCLASS` – Member class for the service, usually the same as for the client (e.g., GOV).
+- `SERVICE_MEMBERCODE` – Unique organization identifier code of the service provider organization, e.g., 10000004.
+- `SERVICE_SERVICECODE` – Service code in X-Road. For example, getRegistryDataById is the code of the specific service published by the provider.
+- `SERVICE_SUBSYSTEMCODE` – Subsystem code of the service provider organization in X-Road. For example, SUB_SERVICE.
+- `SERVICE_SERVICEVERSION` – Version of the service from the provider in X-Road.
+- `LOGGING_LEVEL` – Logging verbosity level. Possible values: DEBUG (most detailed), INFO, WARNING, ERROR, CRITICAL. DEBUG outputs the most information for debugging.
+- `LOGGING_FILENAME` – Log file name. If this is empty, logs will be output to the console (stdout).
 
-## Збір Docker-образу
+## Building the Docker Image
 
-Для того, щоб зібрати Docker-образ, необхідно:
+To build the Docker image:
 
-1. Клонувати репозиторій:
-
-```bash
-git clone https://github.com/kshypachov/web-client_trembita_sync.git
-```
-
-2. Перейти до директорії з вебклієнтом:
+1. Clone the repository:
 
 ```bash
-cd web-client_trembita_sync
+git clone https://github.com/fortor48/X-Road_REST_client_example.git
 ```
 
-3. Виконати наступну команду в кореневій директорії проєкту:
+2. Navigate to the web client directory:
 
 ```bash
-sudo docker build -t web-client_trembita_sync .
+cd X-Road_REST_client_example
 ```
 
-Дана команда створить Docker-образ з іменем `web-client_trembita_sync`, використовуючи Dockerfile, який знаходиться в поточній директорії.
-
-## Запуск та використання контейнера зі змінними оточення
-
-Щоб запустити контейнер з додатком, необхідно виконати команду:
+3. Run the following command in the project root:
 
 ```bash
-sudo docker run -it --rm -p 5000:5000 \
-    -e USE_ENV_CONFIG=true \
-    -e TREMBITA_PROTOCOL=http \
-    -e TREMBITA_PURPOSE_ID=1234567 \
-    -e TREMBITA_HOST=10.0.20.235 \
-    -e CLIENT_INSTANCE=SEVDEIR-TEST \
-    -e CLIENT_MEMBERCLASS=GOV \
-    -e CLIENT_MEMBERCODE=10000004 \
-    -e CLIENT_SUBSYSTEMCODE=SUB_CLIENT \
-    -e SERVICE_INSTANCE=SEVDEIR-TEST \
-    -e SERVICE_MEMBERCLASS=GOV \
-    -e SERVICE_MEMBERCODE=10000004 \
-    -e SERVICE_SERVICECODE=py_sync \
-    -e SERVICE_SUBSYSTEMCODE=SUB_SERVICE \
-    -e LOGGING_LEVEL=DEBUG \
-    web-client_trembita_sync
+sudo docker build -t x-road_rest_client_example .
 ```
 
-де:
-- параметр `-p 5000:5000` перенаправляє порт 5000 на локальній машині на порт 5000 всередині контейнера.
-- інші змінні перелічені в пункті [Змінні оточення](#змінні-оточення)
+This command will create a Docker image named `x-road_rest_client_example`, using the Dockerfile in the current directory.
 
-Якщо планується повністю використовувати змінні оточення для конфігурації, необхідно переконатись, що `USE_ENV_CONFIG=true`.
+## Running and Using the Container with Environment Variables
 
-Наприклад:
+To launch the container with the application:
 
 ```bash
 sudo docker run -it --rm -p 5000:5000 \
@@ -90,32 +63,59 @@ sudo docker run -it --rm -p 5000:5000 \
     -e TREMBITA_PROTOCOL=http \
     -e TREMBITA_PURPOSE_ID=1234567 \
     -e TREMBITA_HOST=10.0.20.235 \
-    -e CLIENT_INSTANCE=SEVDEIR-TEST \
+    -e CLIENT_INSTANCE=BD-POC \
     -e CLIENT_MEMBERCLASS=GOV \
     -e CLIENT_MEMBERCODE=10000004 \
     -e CLIENT_SUBSYSTEMCODE=SUB_CLIENT \
-    -e SERVICE_INSTANCE=SEVDEIR-TEST \
+    -e SERVICE_INSTANCE=BD-POC \
     -e SERVICE_MEMBERCLASS=GOV \
     -e SERVICE_MEMBERCODE=10000004 \
     -e SERVICE_SERVICECODE=py_sync \
     -e SERVICE_SUBSYSTEMCODE=SUB_SERVICE \
     -e LOGGING_LEVEL=DEBUG \
-    web-client_trembita_sync
+    x-road_rest_client_example
 ```
 
-### Запуск та використання контейнера з конфігураційним файлом
+Where:
+- `-p 5000:5000` maps port 5000 on your local machine to port 5000 inside the container.
+- Other variables are listed in the [Environment Variables](#environment-variables) section.
 
-Контейнер з вебклієнтом можна запустити використовуючи конфігураційний файл замість змінних оточення. 
-Для цього необхідно створити файл `config.ini` в директорії вебклієнта та вказати шлях до нього:
+If you plan to use only environment variables for configuration, make sure `USE_ENV_CONFIG=true` is set.
+
+Example:
+
+```bash
+sudo docker run -it --rm -p 5000:5000 \
+    -e USE_ENV_CONFIG=true \
+    -e TREMBITA_PROTOCOL=http \
+    -e TREMBITA_PURPOSE_ID=1234567 \
+    -e TREMBITA_HOST=10.0.20.235 \
+    -e CLIENT_INSTANCE=BD-POC \
+    -e CLIENT_MEMBERCLASS=GOV \
+    -e CLIENT_MEMBERCODE=10000004 \
+    -e CLIENT_SUBSYSTEMCODE=SUB_CLIENT \
+    -e SERVICE_INSTANCE=BD-POC \
+    -e SERVICE_MEMBERCLASS=GOV \
+    -e SERVICE_MEMBERCODE=10000004 \
+    -e SERVICE_SERVICECODE=py_sync \
+    -e SERVICE_SUBSYSTEMCODE=SUB_SERVICE \
+    -e LOGGING_LEVEL=DEBUG \
+    x-road_rest_client_example
+```
+
+### Running the Container with a Configuration File
+
+You can run the container using a configuration file instead of environment variables.  
+To do this, create a `config.ini` file in the web client directory and mount it:
 
 ```bash
 docker run -it --rm -p 5000:5000 \
     -v $(pwd)/config.ini:/app/config.ini \
-    web-client_trembita_sync
+    x-road_rest_client_example
 ```
-де параметр `-v $(pwd)/config.ini:/app/config.ini` монтує локальний файл конфігурації в контейнер за шляхом `/app/config.ini`.
+Where `-v $(pwd)/config.ini:/app/config.ini` mounts the local config file into the container at `/app/config.ini`.
 
-### Приклад конфігураційного файлу `config.ini`:
+### Example Configuration File `config.ini`:
 
 ```ini
 [trembita]
@@ -129,13 +129,13 @@ key_file = key.pem
 trembita_cert_file = trembita.pem
 
 [client]
-instance = test1
+instance = BD-POC
 memberClass = GOV
 memberCode = 10000003
 subsystemCode = CLIENT
 
 [service]
-instance = test1
+instance = BD-POC
 memberClass = GOV
 memberCode = 10000003
 subsystemCode = SERVICE
@@ -150,26 +150,26 @@ dateformat = %H:%M:%S
 level = DEBUG # info warning debug
 ```
 
-Якщо змінна оточення `USE_ENV_CONFIG` не задана або встановлене значення `false`, вебклієнт буде використовувати конфігураційний файл для налаштування. Необхідно переконатись, що файл доступний у контейнері, як показано в даному розділі вище.
+If the environment variable `USE_ENV_CONFIG` is not set or is `false`, the web client will use the configuration file. Make sure the file is accessible in the container as shown above.
 
-## Перегляд журналів подій
+## Viewing Logs
 
-Якщо виведення журналів подій налаштоване у консоль, переглядати їх можна за допомогою команди:
+If logging is configured to output to the console, you can view logs using:
 
 ```bash
 docker logs <container_id>
 ```
 
-В разі, якщо журнали подій зберігаються у файл (через змінну оточення `LOG_FILENAME` або конфігураційний файл), можна налаштувати монтування директорії з журналами подій на локальній машині наступним чином:
+If logs are saved to a file (via the `LOG_FILENAME` environment variable or configuration file), you can mount the local logging directory as follows:
 
 ```bash
 docker run -it --rm -p 5000:5000 \
     -e LOGGING_FILENAME="/var/log/app.log" \
     -v $(pwd)/logs:/var/log \
-    web-client_trembita_sync
+    x-road_rest_client_example
 ```
 
-де параметр `-v $(pwd)/logs:/var/log` монтує локальну директорію для збереження журналів подій.
+Where `-v $(pwd)/logs:/var/log` mounts your local log directory inside the container.
 
 ##
-Матеріали створено за підтримки проєкту міжнародної технічної допомоги «Підтримка ЄС цифрової трансформації України (DT4UA)».
+The materials were created with support from the international technical assistance project “Bangladesh e-governance (BGD)”.
