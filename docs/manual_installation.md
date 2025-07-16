@@ -1,53 +1,53 @@
-# Інсталяція клієнта вручну
+# 🛠️ Manual Client Installation
 
-Також існує можливість встановлення вебклієнту вручну, без застосування скрипта.
+You can install the web client manually without using the installation script.
 
-Для початку роботи потрібно мати чисту систему Ubuntu, всі необхідні пакети та репозиторії будуть підключені в ході виконання встановлення.
+To begin, you need a clean Ubuntu system. All required packages and repositories will be set up during installation.
 
-**Для того, щоб встановити даний вебклієнт вручну необхідно:**
+**To install this web client manually, follow these steps:**
 
-### 1. Встановити необхідні пакети:
+### 1. Install required packages:
 
 ```bash
 sudo apt update
 sudo apt install -y git python3 python3-pip python3-venv
 ```
 
-**Важливо:** Якщо версія Python нижче 3.10, клієнт працювати не буде.
+**Note:** If your Python version is below 3.10, the client will not work.
 
-### 2. Клонувати репозиторій
-
-```bash
-git clone https://github.com/kshypachov/web-client_trembita_sync.git
-```
-
-### 3. Перейти до директорії з вебклієнтом
+### 2. Clone the repository
 
 ```bash
-cd web-client_trembita_sync
+git clone https://github.com/fortor48/X-Road_REST_client_example.git
 ```
 
-### 4. Створити віртуальне середовище
+### 3. Navigate to the web client directory
+
+```bash
+cd X-Road_REST_client_example
+```
+
+### 4. Create a virtual environment
 ```bash
 python3 -m venv venv
 ```
 
-### 5. Активувати віртуальне середовище
+### 5. Activate the virtual environment
 ```bash
 source venv/bin/activate
 ```
 
-### 6. Встановити залежності
+### 6. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 7. Виконати конфігурацію вебклієнту згідно [настанов з конфігурації](./configuration.md)
+### 7. Configure the web client according to the [configuration instructions](./configuration.md)
 
-### 8. Створити systemd unit-файл для запуску вебсервісу:
+### 8. Create a systemd unit file for starting the web service:
 
 ```bash
-sudo bash -c "cat > /etc/systemd/system/fastapi_trembita_client.service" << EOL
+sudo bash -c "cat > /etc/systemd/system/x-road_rest_client_example.service" << EOL
 [Unit]
 Description=Flask Application
 After=network.target
@@ -64,19 +64,19 @@ WantedBy=multi-user.target
 EOL
 ```
 
-9. Перезавантажити конфігурацію systemd:
+### 9. Reload systemd configuration:
 
 ```bash
 sudo systemctl daemon-reload
 ```
 
-10. Додати сервіс до автозапуску
+### 10. Enable service to start automatically
 
 ```bash
-sudo systemctl enable fastapi_trembita_client
+sudo systemctl enable x-road_rest_client_example
 ```
 
-Адмініструваняя вебклієнту здійснюється згідно [настанов з адміністрування вебсервісу](/README.md#Адміністрування-клієнту)
+Administration of the web client should follow the [web service administration guidelines](/README.md#client-administration)
 
 ##
-Матеріали створено за підтримки проєкту міжнародної технічної допомоги «Підтримка ЄС цифрової трансформації України (DT4UA)».
+The materials were created with support from the international technical assistance project “Bangladesh e-governance (BGD)”.
