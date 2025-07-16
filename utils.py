@@ -186,9 +186,9 @@ def generate_key_cert_rsa(key: str, crt: str, path: str):
 
     # Create x509 object for certificate
     subject = issuer = x509.Name([
-        x509.NameAttribute(NameOID.COUNTRY_NAME, "UA"),
-        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Kyiv"),
-        x509.NameAttribute(NameOID.LOCALITY_NAME, "Kyiv"),
+        x509.NameAttribute(NameOID.COUNTRY_NAME, "BD"),
+        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Dhaka"),
+        x509.NameAttribute(NameOID.LOCALITY_NAME, "Dhaka"),
         x509.NameAttribute(NameOID.ORGANIZATION_NAME, "The Best Company"),
         x509.NameAttribute(NameOID.COMMON_NAME, "test.com"),
     ])
