@@ -87,6 +87,11 @@ class Config:
         self.log_format = get_config_value('logging', 'format', '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         self.log_dateformat = get_config_value('logging', 'dateformat', '%Y-%m-%d %H:%M:%S')
         self.log_level = get_config_value('logging', 'level', 'INFO', required=True)
+        # OpenTelemetry parameters
+        self.telemetry_enabled = get_config_value('open-telemetry', 'enabled', 'false')
+        self.telemetry_own_service_name = get_config_value('open-telemetry', 'own-service-name', 'x-road_rest_client_example')
+        self.telemetry_endpoint = get_config_value('open-telemetry', 'endpoint', '')
+        self.telemetry_sample_ratio = get_config_value('open-telemetry', 'sample_ratio', '0.0')
 
 
     def get(self, section, option):

@@ -2,9 +2,20 @@ import sys
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_bootstrap import Bootstrap
+
 import utils
 import os
 import logging
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.resources import Resource, SERVICE_NAME
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.requests import RequestsInstrumentor
+from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
+
 
 # Reading application parameters from config file
 conf = utils.Config('config.ini')
@@ -40,8 +51,32 @@ if not os.path.exists(private_key_full_path) or not os.path.exists(certificate_f
     logger.info(f"Key: {key} or certificate {cert} not found in directory {crt_directory}")
     utils.generate_key_cert(key, cert, crt_directory)
 
+if conf.telemetry_enabled == "true" :
+    logger.info("Telemetry enabled")
+    # Set up tracer provider with service name
+    trace.set_tracer_provider(
+        TracerProvider(
+            resource=Resource.create({SERVICE_NAME: conf.telemetry_own_service_name}),
+            sampler=TraceIdRatioBased(float(conf.telemetry_sample_ratio))
+        )
+    )
+
+    otlp_exporter = OTLPSpanExporter(
+        endpoint=conf.telemetry_endpoint,  # OTLP gRPC port by default
+        insecure=True  # No TLS (if Collector has no mTLS)
+    )
+
+    trace.get_tracer_provider().add_span_processor(
+        BatchSpanProcessor(otlp_exporter)
+    )
+
 # Initialize Flask application
 app = Flask(__name__)
+if conf.telemetry_enabled == "true" :
+    # Instrument Flask (automatically wraps routes in spans)
+    RequestsInstrumentor().instrument()
+    FlaskInstrumentor().instrument_app(app)
+
 Bootstrap(app)
 logger.info("Flask application initialized.")
 
@@ -117,44 +152,7 @@ def delete_person():
         return resp
     return jsonify(message= http_resp.body), http_resp.status_code
 
-# Handle file list display
-# @app.route('/files')
-# def list_files():
-#     logger.debug("Received GET request to '/files' route.")
-#     try:
-#         # Get list of files in ASIC directory
-#         files = []
-#         for filename in os.listdir(asic_directory):
-#             filepath = os.path.join(asic_directory, filename)
-#             if os.path.isfile(filepath):
-#                 creation_time = datetime.fromtimestamp(os.path.getctime(filepath))
-#                 files.append({
-#                     'name': filename,
-#                     'creation_time': creation_time.strftime('%Y-%m-%d %H:%M:%S')
-#                 })
-#
-#         # Sort files by creation date in descending order
-#         files = sorted(files, key=lambda x: x['creation_time'], reverse=True)
-#         logger.debug("File list retrieved successfully.")
-#
-#         return render_template('list_files.html', files=files, current_page='files')
-#     except Exception as e:
-#         logger.error(f"Error occurred: {str(e)}")
-#         return render_template('error.html', error_message=e, current_page='files')
-#
-# # File download
-# @app.route('/download/<filename>')
-# def download_file(filename):
-#     logger.debug(f"Received GET request to '/download/{filename}' route.")
-#     ASIC_DIR = os.path.join(os.getcwd(), asic_directory)
-#     safe_filename = os.path.basename(filename)  # File name validation for security
-#     try:
-#         return send_from_directory(ASIC_DIR, safe_filename, as_attachment=True)  # Send file
-#     except Exception as e:
-#         logger.error(f"Error occurred: {str(e)}")
-#         return render_template('error.html', error_message=e, current_page='files')
-
-# Certificate download
+# Handle certificate download
 @app.route('/download_cert/<filename>')
 def download_cert(filename):
     logger.debug(f"Received GET request to '/download_cert/{filename}' route.")
