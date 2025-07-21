@@ -61,14 +61,14 @@ class Config:
 
         # Reading configuration
         # X-Road section
-        self.trembita_protocol = get_config_value('trembita', 'protocol', required=True)
-        self.trembita_host = get_config_value('trembita', 'host', required=True)
-        self.trembita_purpose = get_config_value('trembita', 'purpose_id', '')
-        self.cert_path = get_config_value('trembita', 'cert_path', 'certs')
-        self.asic_path = get_config_value('trembita', 'asic_path', 'asic')
-        self.cert_file = get_config_value('trembita', 'cert_file', 'cert.pem')
-        self.key_file = get_config_value('trembita', 'key_file', 'key.pem')
-        self.tembita_cert_file = get_config_value('trembita', 'trembita_cert_file', 'trembita.pem')
+        self.xroad_protocol = get_config_value('xroad', 'protocol', required=True)
+        self.xroad_host = get_config_value('xroad', 'host', required=True)
+        #self.trembita_purpose = get_config_value('xroad', 'purpose_id', '')
+        self.cert_path = get_config_value('xroad', 'cert_path', 'certs')
+        self.asic_path = get_config_value('xroad', 'asic_path', 'asic')
+        self.cert_file = get_config_value('xroad', 'cert_file', 'cert.pem')
+        self.key_file = get_config_value('xroad', 'key_file', 'key.pem')
+        self.xroad_cert_file = get_config_value('xroad', 'xroad_cert_file' , 'xroad.pem')
         # Client subsystem identifiers
         self.client_instance = get_config_value('client', 'instance', required=True)
         self.client_org_type = get_config_value('client', 'memberClass', required=True)
@@ -410,10 +410,10 @@ def get_xroad_headers_from_config(config_instance) -> dict:
 def get_base_xroad_uri(config_instance) -> str:
     # Compose base URI for calling service via X-Road security server
     logger.debug("Composing base X-Road URL for the client")
-    if config_instance.trembita_protocol == "https":
-        uri = f"https://{config_instance.trembita_host}:8443"
+    if config_instance.xroad_protocol == "https":
+        uri = f"https://{config_instance.xroad_host}:8443"
     else:
-        uri = f"http://{config_instance.trembita_host}:8080"
+        uri = f"http://{config_instance.xroad_host}:8080"
     logger.debug(f"Base X-Road service calling URI: {uri}")
     return uri
 
@@ -441,13 +441,14 @@ def get_person_from_service(parameter: str, value: str, config_instance) -> list
     encoded_url = quote(url, safe=':/')
     logger.info(f"Retrieving person information with parameter: {parameter} and value: {value}")
     try:
-        if config_instance.trembita_protocol == "https":
+        if config_instance.xroad_protocol == "https":
             # Send HTTPS request to retrieve person data
             response = requests.get(encoded_url, headers=headers, params=query_params,
-                cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
-                    os.path.join(config_instance.cert_path, config_instance.key_file)),
-                verify=os.path.join(config_instance.cert_path, config_instance.tembita_cert_file))
-            # download_asic_from_trembita(query_params.get('queryId'), config_instance)
+                                    cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
+                                          os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                    verify=os.path.join(config_instance.cert_path, config_instance.xroad_cert_file))
+
+            #download_asic_from_trembita(query_params.get('queryId'), config_instance)
         else:
             # Send HTTP request to retrieve person data
             response = requests.get(encoded_url, headers=headers, params=query_params)
@@ -476,13 +477,14 @@ def edit_person_in_service(data: dict, config_instance) -> CustomResponse:
 
     logger.debug(f"Editing person information: {data}")
     try:
-        if config_instance.trembita_protocol == "https":
+        if config_instance.xroad_protocol == "https":
             # Send HTTPS request to update person information
             response = requests.put(url, json=data, headers=headers, params=query_params,
-                cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
-                    os.path.join(config_instance.cert_path, config_instance.key_file)),
-                verify=os.path.join(config_instance.cert_path, config_instance.tembita_cert_file))
-            # download_asic_from_trembita(query_params.get('queryId'), config_instance)
+                                    cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
+                                          os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                    verify=os.path.join(config_instance.cert_path, config_instance.xroad_cert_file))
+
+            #download_asic_from_trembita(query_params.get('queryId'), config_instance)
         else:
             # Send HTTP request to update person information
             response = requests.put(url, json=data, headers=headers, params=query_params)
@@ -510,13 +512,13 @@ def service_delete_person(data: dict, config_instance) -> CustomResponse:
 
     logger.info(f"Deleting person with UNZR id: {data['unzr']}")
     try:
-        if config_instance.trembita_protocol == "https":
+        if config_instance.xroad_protocol == "https":
             # Send HTTPS request to delete person
             response = requests.delete(url, headers=headers, params=query_params,
-                cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
-                    os.path.join(config_instance.cert_path, config_instance.key_file)),
-                verify=os.path.join(config_instance.cert_path,
-                                    config_instance.tembita_cert_file))
+                                       cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
+                                             os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                       verify=os.path.join(config_instance.cert_path,
+                                                           config_instance.xroad_cert_file))
 
             # download_asic_from_trembita(query_params.get('queryId'), config_instance)
         else:
@@ -540,12 +542,12 @@ def service_add_person(data: dict, config_instance) -> CustomResponse:
     url = base_url
     logger.info(f"Adding new person: {data}")
     try:
-        if config_instance.trembita_protocol == "https":
+        if config_instance.xroad_protocol == "https":
             # Send HTTPS request to add new person
             response = requests.post(url, json=data, headers=headers, params=query_params,
-                cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
-                    os.path.join(config_instance.cert_path, config_instance.key_file)),
-                verify=os.path.join(config_instance.cert_path, config_instance.tembita_cert_file))
+                                     cert=(os.path.join(config_instance.cert_path, config_instance.cert_file),
+                                           os.path.join(config_instance.cert_path, config_instance.key_file)),
+                                     verify=os.path.join(config_instance.cert_path, config_instance.xroad_cert_file))
 
             # download_asic_from_trembita(query_params.get('queryId'), config_instance)
         else:
