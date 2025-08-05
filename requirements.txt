@@ -19,8 +19,7 @@ Werkzeug==3.0.3
 opentelemetry-sdk                        ==1.32.0
 opentelemetry-exporter-otlp-proto-grpc   ==1.32.0
 opentelemetry-exporter-jaeger            ==1.21.0
-opentelemetry-instrumentation-flask      ==0.56b0
-opentelemetry-instrumentation-requests   ==0.56b0
-opentelemetry-instrumentation-wsgi       ==0.56b0
-deprecated == 1.2.18
+opentelemetry-instrumentation-flask      ==0.53b0
+opentelemetry-instrumentation-requests   ==0.53b0
+opentelemetry-instrumentation-wsgi       ==0.53b0
 gunicorn
