@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Creating a systemd unit file for the system service
 SERVICE_NAME=x-road_rest_client_example
 SERVICE_FILE=/etc/systemd/system/$SERVICE_NAME.service
@@ -8,14 +10,14 @@ WORKING_FOLDER=X-Road_REST_client_example
 
 # Updating packages and installing required dependencies
 sudo apt update
-sudo apt install -y git python3 python3-pip python3-venv
+sudo apt install -y git python3.10 python3-pip python3-venv
 
 # Cloning the repository
 git clone $GIT_REPO
 cd $WORKING_FOLDER
 
 # Creating and activating a virtual environment
-python3 -m venv venv
+python3.10 -m venv venv
 source venv/bin/activate
 
 # Installing dependencies
