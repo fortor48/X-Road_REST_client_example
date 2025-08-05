@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Creating a systemd unit file for the system service
 SERVICE_NAME=x-road_rest_client_example
 SERVICE_FILE=/etc/systemd/system/$SERVICE_NAME.service
